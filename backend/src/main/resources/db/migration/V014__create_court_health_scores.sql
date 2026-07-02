@@ -12,5 +12,5 @@ CREATE TABLE court_health_scores (
     CONSTRAINT health_retry_rate   CHECK (retry_rate BETWEEN 0 AND 1)
 );
 
-CREATE INDEX idx_health_court_id       ON court_health_scores(court_id);
-CREATE INDEX idx_health_calculated_at  ON court_health_scores(court_id, calculated_at DESC);
+CREATE INDEX idx_health_court_id      ON court_health_scores(court_id);
+CREATE INDEX idx_health_calculated_at ON court_health_scores(court_id, calculated_at DESC);

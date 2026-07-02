@@ -12,6 +12,6 @@ CREATE TABLE process_snapshots (
     ))
 );
 
-CREATE INDEX idx_snapshots_process_id     ON process_snapshots(process_id);
-CREATE INDEX idx_snapshots_captured_at    ON process_snapshots(process_id, captured_at DESC);
-CREATE INDEX idx_snapshots_content_hash   ON process_snapshots(content_hash);
+CREATE INDEX idx_snapshots_process_id   ON process_snapshots(process_id);
+CREATE INDEX idx_snapshots_captured_at  ON process_snapshots(process_id, captured_at DESC);
+CREATE INDEX idx_snapshots_content_hash ON process_snapshots(content_hash);

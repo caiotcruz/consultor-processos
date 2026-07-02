@@ -16,6 +16,6 @@ CREATE TABLE notification_history (
     ))
 );
 
-CREATE INDEX idx_notif_user_id  ON notification_history(user_id);
-CREATE INDEX idx_notif_sent_at  ON notification_history(user_id, sent_at DESC);
-CREATE INDEX idx_notif_status   ON notification_history(status) WHERE status = 'FAILED';
+CREATE INDEX idx_notif_user_id ON notification_history(user_id);
+CREATE INDEX idx_notif_sent_at ON notification_history(user_id, sent_at DESC);
+CREATE INDEX idx_notif_status  ON notification_history(status) WHERE status = 'FAILED';

@@ -21,4 +21,5 @@ CREATE TABLE processes (
 CREATE UNIQUE INDEX idx_processes_number_court ON processes(process_number, court_id);
 CREATE        INDEX idx_processes_status       ON processes(status);
 CREATE        INDEX idx_processes_court_id     ON processes(court_id);
-CREATE        INDEX idx_processes_last_checked ON processes(last_checked_at NULLS FIRST) WHERE status IN ('PENDING', 'OK');
+CREATE        INDEX idx_processes_last_checked ON processes(last_checked_at NULLS FIRST)
+    WHERE status IN ('PENDING', 'OK');

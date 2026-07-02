@@ -1,6 +1,6 @@
 CREATE TABLE court_requests (
     id              UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id         UUID         NOT NULL REFERENCES users(id) ON DELETE SET NULL,
+    user_id         UUID         NULL REFERENCES users(id) ON DELETE SET NULL,
     court_name      VARCHAR(200) NOT NULL,
     court_code      VARCHAR(20)  NULL,
     process_number  VARCHAR(30)  NULL,
