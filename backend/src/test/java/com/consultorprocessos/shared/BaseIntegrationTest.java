@@ -42,7 +42,6 @@ public abstract class BaseIntegrationTest {
 
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
-        // Banco
         registry.add("spring.datasource.url",      POSTGRES::getJdbcUrl);
         registry.add("spring.datasource.username",  POSTGRES::getUsername);
         registry.add("spring.datasource.password",  POSTGRES::getPassword);

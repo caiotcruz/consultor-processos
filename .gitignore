@@ -40,3 +40,10 @@ Desktop.ini
 *~
 
 .testcontainers.properties
+
+*.pem
+*.der
+
+mvnw.cmd
+mvnw
+*/.mvn/*

@@ -72,6 +72,22 @@ spring:
     default-property-inclusion: NON_NULL
     time-zone: UTC
 
+  mail:
+    host:     ${SMTP_HOST:localhost}
+    port:     ${SMTP_PORT:587}
+    username: ${SMTP_USER:}
+    password: ${SMTP_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth:            true
+          starttls:
+            enable:        true
+            required:      true
+          connectiontimeout: 5000
+          timeout:           5000
+          writetimeout:      5000
+
 management:
   endpoints:
     web:
@@ -81,10 +97,10 @@ management:
   endpoint:
     health:
       show-details: never   
-  metrics:
-    export:
-      prometheus:
-        enabled: true
+  prometheus:
+    metrics:
+      export:
+          enabled: true
 
 app:
   scheduler:
@@ -103,6 +119,17 @@ app:
 
   courts:
     real-requests-enabled: false
+  
+  jwt:
+    private-key: ${JWT_PRIVATE_KEY:}   
+    public-key:  ${JWT_PUBLIC_KEY:}
+    access-token-expiry-minutes: 15
+    refresh-token-expiry-days:   7
+  
+  email:
+    sender-address: ${EMAIL_SENDER_ADDRESS:noreply@consultorprocessos.com.br}
+    sender-name:    ${EMAIL_SENDER_NAME:Consultor de Processos}
+
 
 server:
   port: 8080
