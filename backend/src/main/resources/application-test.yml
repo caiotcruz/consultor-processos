@@ -1,0 +1,34 @@
+spring:
+  flyway:
+    locations: classpath:db/migration
+
+  jpa:
+    show-sql: false
+    hibernate:
+      ddl-auto: validate
+
+  rabbitmq:
+    listener:
+      simple:
+        concurrency:     1
+        max-concurrency: 1
+
+logging:
+  level:
+    com.consultorprocessos: WARN
+    org.testcontainers:     WARN
+    com.github.dockerjava:  WARN
+    root:                   WARN
+
+app:
+  scheduler:
+    enabled: false
+
+  notifications:
+    email:
+      enabled: false
+    push:
+      enabled: false
+
+  courts:
+    real-requests-enabled: false 

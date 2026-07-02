@@ -1,0 +1,49 @@
+spring:
+  datasource:
+    url:      jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle:       2
+
+  flyway:
+    url:      jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
+    user:     ${FLYWAY_USER}
+    password: ${FLYWAY_PASSWORD}
+    locations: classpath:db/migration
+
+  data:
+    redis:
+      host:     ${REDIS_HOST}
+      port:     ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD}
+
+  rabbitmq:
+    host:     ${RABBITMQ_HOST}
+    port:     ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USER}
+    password: ${RABBITMQ_PASSWORD}
+
+logging:
+  level:
+    com.consultorprocessos: INFO
+    root:                   WARN
+
+app:
+  scheduler:
+    enabled:          true
+    cron:             "0 */10 * * * *"
+    lock-ttl-seconds: 540
+
+  notifications:
+    email:
+      enabled: true
+    push:
+      enabled: true
+
+  courts:
+    real-requests-enabled: true
+
+  dev-mode:
+    enabled: false

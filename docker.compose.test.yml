@@ -1,0 +1,5 @@
+version: "3.9"
+# Este arquivo é usado apenas no CI para garantir que o Docker daemon
+# está disponível para o Testcontainers. Em desenvolvimento local,
+# o Testcontainers gerencia seus próprios containers automaticamente.
+services: {}

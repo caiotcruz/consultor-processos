@@ -1,0 +1,45 @@
+spring:
+  datasource:
+    url:      jdbc:postgresql://localhost:5432/consultorprocessos_dev
+    username: dev
+    password: dev
+
+  flyway:
+    locations: classpath:db/migration,classpath:db/dev
+
+  jpa:
+    show-sql: false 
+
+  data:
+    redis:
+      host:     localhost
+      port:     6379
+      password: ""
+
+  rabbitmq:
+    host:     localhost
+    username: dev
+    password: dev
+
+logging:
+  level:
+    com.consultorprocessos: DEBUG
+    org.springframework.amqp: INFO
+    org.flywaydb:            INFO
+    root:                    INFO
+
+app:
+  scheduler:
+    enabled: false
+    cron:    "0 */1 * * * *"
+    lock-ttl-seconds: 50
+
+  courts:
+    real-requests-enabled: false
+    mock-base-url: http://localhost:9000
+
+  dev-mode:
+    enabled:          true
+    auto-login:       true
+    auto-user-email:  dev@consultorprocessos.com.br
+    auto-user-plan:   AVANCADO

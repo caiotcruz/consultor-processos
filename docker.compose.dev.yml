@@ -1,0 +1,61 @@
+version: "3.9"
+
+services:
+
+  db:
+    image: postgres:16-alpine
+    container_name: cp-db-dev
+    environment:
+      POSTGRES_DB:       consultorprocessos_dev
+      POSTGRES_USER:     dev
+      POSTGRES_PASSWORD: dev
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_dev_data:/var/lib/postgresql/data
+      - ./infra/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dev -d consultorprocessos_dev"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - dev-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: cp-redis-dev
+    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - dev-network
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: cp-rabbitmq-dev
+    environment:
+      RABBITMQ_DEFAULT_USER: dev
+      RABBITMQ_DEFAULT_PASS: dev
+    ports:
+      - "5672:5672"
+      - "15672:15672" 
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+    networks:
+      - dev-network
+
+volumes:
+  db_dev_data:
+
+networks:
+  dev-network:
+    driver: bridge

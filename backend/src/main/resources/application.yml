@@ -1,0 +1,114 @@
+spring:
+  application:
+    name: consultor-processos
+
+  datasource:
+    url:      jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:consultorprocessos_dev}
+    username: ${DB_USER:dev}
+    password: ${DB_PASSWORD:dev}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size:  10
+      minimum-idle:        2
+      connection-timeout:  30000
+      idle-timeout:       600000
+      max-lifetime:      1800000
+      pool-name:         CP-HikariPool
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    show-sql:    false
+    properties:
+      hibernate:
+        dialect:              org.hibernate.dialect.PostgreSQLDialect
+        format_sql:           false
+        default_schema:       public
+        jdbc:
+          time_zone:          UTC
+
+  flyway:
+    enabled:              true
+    baseline-on-migrate:  false
+    locations:            classpath:db/migration
+    table:                flyway_schema_history
+    validate-on-migrate:  true
+    out-of-order:         false
+
+  data:
+    redis:
+      host:     ${REDIS_HOST:localhost}
+      port:     ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      timeout:  2000ms
+      lettuce:
+        pool:
+          max-active:  8
+          max-idle:    8
+          min-idle:    2
+          max-wait:    1000ms
+
+  rabbitmq:
+    host:         ${RABBITMQ_HOST:localhost}
+    port:         ${RABBITMQ_PORT:5672}
+    username:     ${RABBITMQ_USER:dev}
+    password:     ${RABBITMQ_PASSWORD:dev}
+    virtual-host: /
+    listener:
+      simple:
+        concurrency:     ${CRAWLER_WORKERS_MIN:3}
+        max-concurrency: ${CRAWLER_WORKERS_MAX:10}
+        prefetch:        1
+        retry:
+          enabled: false  
+
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+      fail-on-empty-beans:       false
+    deserialization:
+      fail-on-unknown-properties: false
+    default-property-inclusion: NON_NULL
+    time-zone: UTC
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, prometheus, metrics
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: never   
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+app:
+  scheduler:
+    enabled: false      
+    cron:    "0 */10 * * * *"
+    lock-ttl-seconds: 540
+
+  notifications:
+    email:
+      enabled:             false
+      rate-limit-per-hour: 10
+    push:
+      enabled:             false
+    admin-email:           ${ADMIN_EMAIL:admin@consultorprocessos.com.br}
+    unsubscribe-base-url:  ${APP_BASE_URL:http://localhost:4200}/unsubscribe
+
+  courts:
+    real-requests-enabled: false
+
+server:
+  port: 8080
+  servlet:
+    context-path: /
+  error:
+    include-message:    never
+    include-stacktrace: never
+    include-binding-errors: never
