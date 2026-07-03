@@ -36,6 +36,10 @@ public class PasswordReset {
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "token_type", nullable = false, length = 30)
+    private TokenType tokenType = TokenType.PASSWORD_RESET;
+
     @PrePersist
     protected void onCreate() {
         createdAt = Instant.now();

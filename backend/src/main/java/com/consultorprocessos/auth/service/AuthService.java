@@ -70,8 +70,9 @@ public class AuthService {
     public void verifyEmail(String rawToken) {
         String hash = sha256(rawToken);
 
-        PasswordReset tokenEntity = passwordResetRepository.findByTokenHash(hash)
-                .orElseThrow(InvalidTokenException::new);
+        PasswordReset tokenEntity = passwordResetRepository
+            .findByTokenHashAndTokenType(hash, TokenType.EMAIL_VERIFICATION)
+            .orElseThrow(InvalidTokenException::new);
 
         if (!tokenEntity.isValid()) {
             throw new InvalidTokenException();
@@ -193,7 +194,7 @@ public class AuthService {
                     passwordResetRepository.invalidateAllByUserId(user.getId());
 
                     String rawToken = generateSecureToken();
-                    savePasswordResetToken(user, rawToken, 1); // 1 hora
+                    savePasswordResetToken(user, rawToken, 1);
                     emailService.sendPasswordResetEmail(user.getEmail(), rawToken);
                     log.info("Password reset solicitado: userId={}", user.getId());
                 });
@@ -203,8 +204,9 @@ public class AuthService {
     public void resetPassword(ResetPasswordRequest request) {
         String hash = sha256(request.token());
 
-        PasswordReset tokenEntity = passwordResetRepository.findByTokenHash(hash)
-                .orElseThrow(InvalidTokenException::new);
+        PasswordReset tokenEntity = passwordResetRepository
+            .findByTokenHashAndTokenType(hash, TokenType.PASSWORD_RESET)
+            .orElseThrow(InvalidTokenException::new);
 
         if (!tokenEntity.isValid()) {
             throw new InvalidTokenException();
@@ -257,12 +259,18 @@ public class AuthService {
         PasswordReset pr = new PasswordReset();
         pr.setUser(user);
         pr.setTokenHash(sha256(rawToken));
+        pr.setTokenType(TokenType.EMAIL_VERIFICATION);
         pr.setExpiresAt(Instant.now().plus(expiryHours, ChronoUnit.HOURS));
         passwordResetRepository.save(pr);
     }
 
     private void savePasswordResetToken(User user, String rawToken, int expiryHours) {
-        saveVerificationToken(user, rawToken, expiryHours);
+        PasswordReset pr = new PasswordReset();
+        pr.setUser(user);
+        pr.setTokenHash(sha256(rawToken));
+        pr.setTokenType(TokenType.PASSWORD_RESET);
+        pr.setExpiresAt(Instant.now().plus(expiryHours, ChronoUnit.HOURS));
+        passwordResetRepository.save(pr);
     }
 
     private void saveRefreshToken(User user, String rawToken,

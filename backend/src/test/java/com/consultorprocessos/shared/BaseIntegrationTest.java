@@ -16,6 +16,14 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
+import com.consultorprocessos.auth.service.LogAuthEmailService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
@@ -66,6 +74,71 @@ public abstract class BaseIntegrationTest {
 
     @Autowired
     protected JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    protected ObjectMapper objectMapper;
+
+    @Autowired
+    protected LogAuthEmailService logEmailService;
+
+    protected String registerVerifyAndGetToken(String email, String password) throws Exception {
+        mockMvc.perform(post("/v1/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {"name":"Usuário Teste","email":"%s","password":"%s"}
+                """.formatted(email, password)))
+                .andExpect(status().isCreated());
+
+        String verificationToken = logEmailService.getLastTokenFor(
+                email, LogAuthEmailService.EmailType.VERIFICATION);
+
+        mockMvc.perform(post("/v1/auth/verify-email")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {"token":"%s"}
+                """.formatted(verificationToken)))
+                .andExpect(status().isOk());
+
+        return login(email, password);
+    }
+
+    protected String login(String email, String password) throws Exception {
+        String responseBody = mockMvc.perform(post("/v1/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {"email":"%s","password":"%s"}
+                """.formatted(email, password)))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        return objectMapper.readTree(responseBody)
+                .path("data")
+                .path("accessToken")
+                .asText();
+    }
+
+    protected String loginAndGetRefreshToken(String email, String password) throws Exception {
+        String responseBody = mockMvc.perform(post("/v1/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {"email":"%s","password":"%s"}
+                """.formatted(email, password)))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        return objectMapper.readTree(responseBody)
+                .path("data")
+                .path("refreshToken")
+                .asText();
+    }
+
+    protected void clearCapturedEmails() {
+        logEmailService.clear();
+    }
 
     @BeforeEach
     void cleanDatabase() {

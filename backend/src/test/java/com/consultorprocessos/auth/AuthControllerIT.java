@@ -65,7 +65,7 @@ public class AuthControllerIT extends BaseIntegrationTest {
                 """.formatted(token)));
     }
 
-    private String loginAndGetRefreshToken(String email, String password) throws Exception {
+    protected String loginAndGetRefreshToken(String email, String password) throws Exception {
         var result = mockMvc.perform(post(LOGIN_URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""

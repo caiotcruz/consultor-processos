@@ -1,6 +1,8 @@
 package com.consultorprocessos.auth.entity;
 
 import com.consultorprocessos.plan.entity.Plan;
+import com.consultorprocessos.user.entity.UserNotificationPreferences;
+
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -52,6 +54,8 @@ public class User {
     @Column(name = "locked_until")
     private Instant lockedUntil;
 
+    @Embedded
+    private UserNotificationPreferences notificationPreferences =new UserNotificationPreferences();
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(
@@ -101,5 +105,16 @@ public class User {
         this.loginFailureCount = 0;
         this.lockedUntil = null;
         this.lastLoginAt = Instant.now();
+    }
+
+    public void anonymize() {
+        this.name         = "Usuário Removido";
+        this.email        = "deleted_" + this.id + "@deleted.consultorprocessos.com.br";
+        this.passwordHash = "";
+        this.status       = UserStatus.DELETED;
+        this.emailVerifiedAt   = null;
+        this.lastLoginAt       = null;
+        this.loginFailureCount = 0;
+        this.lockedUntil       = null;
     }
 }
