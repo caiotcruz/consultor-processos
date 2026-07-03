@@ -1,5 +1,8 @@
 package com.consultorprocessos.auth.entity;
 
-public class UserStatus {
-    
+public enum UserStatus {
+    PENDING_VERIFICATION,
+    ACTIVE,
+    SUSPENDED,
+    DELETED
 }

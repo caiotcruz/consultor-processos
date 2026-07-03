@@ -6,15 +6,16 @@ spring:
 
   flyway:
     locations: classpath:db/migration,classpath:db/dev
+    out-of-order: true
 
   jpa:
-    show-sql: false 
+    show-sql: false  
 
   data:
     redis:
       host:     localhost
       port:     6379
-      password: ""
+      password: ""    
 
   rabbitmq:
     host:     localhost
@@ -25,12 +26,12 @@ logging:
   level:
     com.consultorprocessos: DEBUG
     org.springframework.amqp: INFO
-    org.flywaydb:            INFO
-    root:                    INFO
+    org.flywaydb:             INFO
+    root:                     INFO
 
 app:
   scheduler:
-    enabled: false
+    enabled: false   
     cron:    "0 */1 * * * *"
     lock-ttl-seconds: 50
 

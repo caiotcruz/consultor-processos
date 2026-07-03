@@ -1,5 +1,8 @@
 package com.consultorprocessos.auth.dto;
 
-public class RefreshResponse {
-    
-}
+public record RefreshResponse(
+        String accessToken,
+        String refreshToken,
+        int    expiresIn,
+        String tokenType
+) {}

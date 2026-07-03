@@ -3,8 +3,8 @@ package com.consultorprocessos.auth.dto;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
-public record ForgotPasswordRequest(
+public record ResendVerificationRequest(
         @NotBlank
-        @Email(message = "Formato de e-mail inválido.")
+        @Email
         String email
 ) {}

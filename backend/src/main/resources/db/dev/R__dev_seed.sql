@@ -8,17 +8,28 @@ DELETE FROM processes;
 DELETE FROM court_requests;
 DELETE FROM password_resets;
 DELETE FROM refresh_tokens;
+DELETE FROM user_roles;
 DELETE FROM users WHERE email LIKE '%@dev.consultorprocessos.com.br';
 
-INSERT INTO users (id, name, email, password_hash, plan_id, status, email_verified_at)
+INSERT INTO users (
+    id, name, email, password_hash, plan_id, status, email_verified_at
+)
 SELECT
     '00000000-0000-0000-0000-000000000001'::uuid,
     'Dev User',
     'dev@consultorprocessos.com.br',
-    '$2a$12$placeholder_hash_substituir_na_fase_2',
+    'placeholder_substituido_pelo_DevDataInitializer',
     p.id,
     'ACTIVE',
     NOW()
 FROM plans p
 WHERE p.name = 'AVANCADO'
+ON CONFLICT DO NOTHING;
+
+INSERT INTO user_roles (user_id, role)
+VALUES ('00000000-0000-0000-0000-000000000001'::uuid, 'ROLE_USER')
+ON CONFLICT DO NOTHING;
+
+INSERT INTO user_roles (user_id, role)
+VALUES ('00000000-0000-0000-0000-000000000001'::uuid, 'ROLE_ADMIN')
 ON CONFLICT DO NOTHING;
