@@ -1,9 +1,10 @@
-// src/main/java/com/consultorprocessos/plan/service/PlanService.java
 package com.consultorprocessos.plan.service;
 
 import com.consultorprocessos.auth.entity.User;
 import com.consultorprocessos.plan.entity.Plan;
 import com.consultorprocessos.plan.repository.PlanRepository;
+import com.consultorprocessos.process.repository.ProcessSubscriptionRepository;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -16,17 +17,11 @@ import java.util.UUID;
 public class PlanService {
 
     private final PlanRepository planRepository;
-    private final JdbcTemplate   jdbcTemplate;
+    private final ProcessSubscriptionRepository subscriptionRepository;
 
     @Transactional(readOnly = true)
     public int countActiveSubscriptions(UUID userId) {
-        Integer count = jdbcTemplate.queryForObject(
-            "SELECT COUNT(*) FROM process_subscriptions " +
-            "WHERE user_id = ? AND active = true",
-            Integer.class,
-            userId
-        );
-        return count != null ? count : 0;
+        return (int) subscriptionRepository.countByUserIdAndActiveTrue(userId);
     }
 
     @Transactional(readOnly = true)

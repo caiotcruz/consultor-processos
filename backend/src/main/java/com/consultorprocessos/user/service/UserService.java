@@ -6,6 +6,7 @@ import com.consultorprocessos.auth.repository.RefreshTokenRepository;
 import com.consultorprocessos.auth.repository.UserRepository;
 import com.consultorprocessos.auth.security.UserDetailsImpl;
 import com.consultorprocessos.plan.service.PlanService;
+import com.consultorprocessos.process.repository.ProcessSubscriptionRepository;
 import com.consultorprocessos.user.dto.*;
 import com.consultorprocessos.user.entity.UserNotificationPreferences;
 import com.consultorprocessos.user.exception.*;
@@ -31,7 +32,7 @@ public class UserService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final PlanService            planService;
     private final PasswordEncoder        passwordEncoder;
-    private final JdbcTemplate           jdbcTemplate;
+    private final ProcessSubscriptionRepository subscriptionRepository;
 
     @Transactional(readOnly = true)
     public UserProfileResponse getProfile(UserDetailsImpl principal) {
@@ -103,11 +104,7 @@ public class UserService {
             throw new InvalidCurrentPasswordException();
         }
 
-        int deactivated = jdbcTemplate.update(
-            "UPDATE process_subscriptions SET active = false, deactivated_at = NOW() " +
-            "WHERE user_id = ? AND active = true",
-            user.getId()
-        );
+        int deactivated = subscriptionRepository.deactivateAllByUserId(user.getId(), Instant.now());
 
         refreshTokenRepository.revokeAllByUserId(user.getId(), Instant.now());
 
