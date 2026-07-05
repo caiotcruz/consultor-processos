@@ -15,6 +15,21 @@ public record ApiResponse<T>(
         return new ApiResponse<>(true, data, null, null);
     }
 
+    public static <T> ApiResponse<java.util.List<T>> success(
+                org.springframework.data.domain.Page<T> page) {
+        return new ApiResponse<>(
+                true,
+                page.getContent(),
+                null,
+                new PageMeta(
+                page.getNumber(),
+                page.getSize(),
+                page.getTotalElements(),
+                page.getTotalPages()
+                )
+        );
+        }
+
     public static ApiResponse<Void> error(String code, String message) {
         return new ApiResponse<>(false, null,
                 new ErrorDetail(code, message, List.of()), null);

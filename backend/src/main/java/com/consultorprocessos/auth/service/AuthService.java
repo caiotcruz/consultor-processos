@@ -1,4 +1,3 @@
-// src/main/java/com/consultorprocessos/auth/service/AuthService.java
 package com.consultorprocessos.auth.service;
 
 import com.consultorprocessos.auth.dto.*;

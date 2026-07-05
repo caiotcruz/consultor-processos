@@ -1,5 +1,8 @@
 package com.consultorprocessos.court.entity;
 
-public class CourtRequestStatus {
-    
+public enum CourtRequestStatus {
+    PENDING,
+    IN_PROGRESS,
+    DONE,
+    REJECTED
 }

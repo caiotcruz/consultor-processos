@@ -1,4 +1,3 @@
-// src/main/java/com/consultorprocessos/auth/exception/InvalidTokenException.java
 package com.consultorprocessos.auth.exception;
 
 import com.consultorprocessos.shared.exception.DomainException;

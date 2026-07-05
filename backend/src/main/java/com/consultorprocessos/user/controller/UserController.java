@@ -1,4 +1,3 @@
-// src/main/java/com/consultorprocessos/user/controller/UserController.java
 package com.consultorprocessos.user.controller;
 
 import com.consultorprocessos.auth.controller.AuthController.MessageResponse;

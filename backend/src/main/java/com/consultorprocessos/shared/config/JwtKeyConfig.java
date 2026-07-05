@@ -1,4 +1,3 @@
-// src/main/java/com/consultorprocessos/shared/config/JwtKeyConfig.java
 package com.consultorprocessos.shared.config;
 
 import lombok.extern.slf4j.Slf4j;

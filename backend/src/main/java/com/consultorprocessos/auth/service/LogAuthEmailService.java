@@ -1,4 +1,3 @@
-// src/main/java/com/consultorprocessos/auth/service/LogAuthEmailService.java
 package com.consultorprocessos.auth.service;
 
 import lombok.extern.slf4j.Slf4j;

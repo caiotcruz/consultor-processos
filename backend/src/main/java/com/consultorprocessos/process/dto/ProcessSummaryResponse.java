@@ -1,5 +1,20 @@
 package com.consultorprocessos.process.dto;
 
-public class ProcessSummaryResponse {
-    
+import java.time.Instant;
+import java.util.UUID;
+
+public record ProcessSummaryResponse(
+        UUID        subscriptionId,
+        UUID        processId,
+        String      processNumber,
+        String      alias,
+        CourtInfo   court,
+        String      status,
+        boolean     active,
+        Instant     lastCheckedAt,
+        Instant     lastMovementAt,
+        String      lastMovementDesc,
+        Instant     createdAt
+) {
+    public record CourtInfo(String code, String name) {}
 }

@@ -1,5 +1,12 @@
 package com.consultorprocessos.process.dto;
 
-public class ProcessHistoryResponse {
-    
-}
+import java.time.Instant;
+import java.time.LocalDate;
+import java.util.UUID;
+
+public record ProcessHistoryResponse(
+        UUID      id,
+        String    description,
+        LocalDate movementDate,
+        Instant   detectedAt
+) {}

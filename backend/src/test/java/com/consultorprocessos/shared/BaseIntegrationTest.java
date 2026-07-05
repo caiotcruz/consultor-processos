@@ -20,6 +20,7 @@ import com.consultorprocessos.auth.service.LogAuthEmailService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import java.util.UUID;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -139,6 +140,35 @@ public abstract class BaseIntegrationTest {
     protected void clearCapturedEmails() {
         logEmailService.clear();
     }
+
+    protected void activateCourt(String courtCode) {
+        jdbcTemplate.update("UPDATE courts SET active = true WHERE code = ?",
+            courtCode.toUpperCase());
+    }
+
+    protected void deactivateCourt(String courtCode) {
+        jdbcTemplate.update("UPDATE courts SET active = false WHERE code = ?",
+            courtCode.toUpperCase());
+    }
+
+    protected String cnj(int n) {
+        return String.format("%07d-55.2025.8.26.0001", n);
+    }
+
+    protected void fillPlanLimit(String token, int count) throws Exception {
+        for (int i = 1; i <= count; i++) {
+            mockMvc.perform(
+                org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                    .post("/v1/processes")
+                    .header("Authorization", "Bearer " + token)
+                    .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                    .content("""
+                        {"processNumber":"%s","courtCode":"STF"}
+                    """.formatted(cnj(i + 9000)))
+            );
+        }
+    }
+
 
     @BeforeEach
     void cleanDatabase() {
