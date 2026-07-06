@@ -37,7 +37,9 @@ public class SecurityConfig {
         "/v1/health",
         "/v1/unsubscribe",
         "/actuator/health",
-        "/actuator/prometheus"
+        "/actuator/prometheus",
+        "/mock/**", 
+        "/control/**"
     };
 
     @Bean

@@ -1,5 +1,7 @@
 package com.consultorprocessos.process.entity;
 
+import com.consultorprocessos.crawler.entity.ProcessSnapshot;
+
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -25,8 +27,9 @@ public class ProcessHistory {
     @JoinColumn(name = "process_id", nullable = false)
     private Process process;
 
-    @Column(name = "snapshot_id", nullable = false)
-    private UUID snapshotId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "snapshot_id", nullable = false)
+    private ProcessSnapshot snapshot;
 
     @Column(name = "description", nullable = false, columnDefinition = "TEXT")
     private String description;
