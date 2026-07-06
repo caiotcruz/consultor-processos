@@ -1,5 +1,3 @@
 package com.consultorprocessos.mock.model;
 
-public class InjectedMovement {
-    
-}
+public record InjectedMovement(String date, String description) {}

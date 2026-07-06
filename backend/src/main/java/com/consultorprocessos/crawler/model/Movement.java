@@ -1,5 +1,8 @@
 package com.consultorprocessos.crawler.model;
 
-public class Movement {
-    
-}
+import java.time.LocalDate;
+
+public record Movement(
+        LocalDate date,
+        String    description
+) {}

@@ -1,5 +1,8 @@
 package com.consultorprocessos.crawler.model;
 
-public class CrawlerStrategy {
-    
+public enum CrawlerStrategy {
+    HTTP,
+    JSOUP,
+    PLAYWRIGHT,
+    SELENIUM
 }

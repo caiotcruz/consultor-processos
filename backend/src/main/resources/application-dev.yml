@@ -37,7 +37,7 @@ app:
 
   courts:
     real-requests-enabled: false
-    mock-base-url: http://localhost:9000
+    mock-base-url: http://localhost:8080
 
   dev-mode:
     enabled:          true

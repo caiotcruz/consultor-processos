@@ -1,5 +1,15 @@
 package com.consultorprocessos.crawler.model;
 
-public class CrawlerSnapshot {
-    
-}
+import java.time.Instant;
+import java.util.List;
+
+public record CrawlerSnapshot(
+        String          processNumber,
+        String          courtCode,
+        String          contentHash,
+        String          rawContentJson,
+        List<Movement>  movements,
+        CrawlerStrategy strategyUsed,
+        String          parserVersion,
+        Instant         capturedAt
+) {}
