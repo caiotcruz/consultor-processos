@@ -7,6 +7,8 @@ import com.consultorprocessos.auth.repository.*;
 import com.consultorprocessos.auth.security.UserDetailsImpl;
 import com.consultorprocessos.plan.repository.PlanRepository;
 import com.consultorprocessos.shared.config.JwtService;
+import com.consultorprocessos.shared.exception.DomainException;
+
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -70,10 +72,14 @@ public class AuthService {
         String hash = sha256(rawToken);
 
         PasswordReset tokenEntity = passwordResetRepository
-            .findByTokenHashAndTokenType(hash, TokenType.EMAIL_VERIFICATION)
-            .orElseThrow(InvalidTokenException::new);
+                .findByTokenHashAndTokenType(hash, TokenType.EMAIL_VERIFICATION)
+                .orElseThrow(InvalidTokenException::new);
 
         if (!tokenEntity.isValid()) {
+            User user = tokenEntity.getUser();
+            if (user.isEmailVerified()) {
+                return;
+            }
             throw new InvalidTokenException();
         }
 
@@ -92,7 +98,7 @@ public class AuthService {
         log.info("E-mail verificado: userId={}", user.getId());
     }
 
-    @Transactional
+    @Transactional(noRollbackFor = DomainException.class)
     public LoginResponse login(LoginRequest request, HttpServletRequest httpRequest) {
         User user = userRepository.findByEmail(request.email().toLowerCase())
                 .orElseThrow(InvalidCredentialsException::new);

@@ -84,7 +84,7 @@ public class ProcessController {
     public ResponseEntity<ApiResponse<ProcessSubscriptionResponse>> updateAlias(
             @AuthenticationPrincipal UserDetailsImpl principal,
             @PathVariable UUID id,
-            @RequestBody UpdateAliasRequest request) {
+            @RequestBody @Valid UpdateAliasRequest request) {
 
         return ResponseEntity.ok(
             ApiResponse.success(

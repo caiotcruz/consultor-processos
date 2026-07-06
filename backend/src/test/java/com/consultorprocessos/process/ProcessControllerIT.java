@@ -49,7 +49,7 @@ class ProcessControllerIT extends BaseIntegrationTest {
                     .andExpect(jsonPath("$.data.subscriptionId").isNotEmpty())
                     .andExpect(jsonPath("$.data.processId").isNotEmpty())
                     .andExpect(jsonPath("$.data.processNumber")
-                            .value("0009001-55.2025.8.26.0001"))
+                            .value(cnj(1)))
                     .andExpect(jsonPath("$.data.alias").value("Meu processo"))
                     .andExpect(jsonPath("$.data.court.code").value("STF"))
                     .andExpect(jsonPath("$.data.status").value("PENDING"))
