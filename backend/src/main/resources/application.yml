@@ -118,7 +118,12 @@ app:
     unsubscribe-base-url:  ${APP_BASE_URL:http://localhost:4200}/unsubscribe
 
   courts:
-    real-requests-enabled: false
+    stf:
+      base-url: ${STF_BASE_URL:https://portal.stf.jus.br}
+    eproc:
+      base-url: ${EPROC_BASE_URL:https://eproc.trf2.jus.br/eproc2trf2}
+    stjrj:
+      base-url: ${STJRJ_BASE_URL:https://www3.tjrj.jus.br/consultaprocessual}
   
   jwt:
     private-key: ${JWT_PRIVATE_KEY:}   
