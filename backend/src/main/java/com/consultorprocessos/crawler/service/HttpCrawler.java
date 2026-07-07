@@ -1,5 +1,6 @@
 package com.consultorprocessos.crawler.service;
 
+import com.consultorprocessos.crawler.exception.CourtUnavailableException;
 import com.consultorprocessos.crawler.model.CrawlContext;
 import com.consultorprocessos.crawler.model.CrawlerStrategy;
 import com.consultorprocessos.crawler.model.RawResponse;
@@ -42,6 +43,10 @@ public class HttpCrawler {
                     HttpResponse.BodyHandlers.ofString());
 
             log.debug("HttpCrawler: {} → HTTP {}", url, response.statusCode());
+
+            if (response.statusCode() >= 500) {
+                throw new CourtUnavailableException("Servidor indisponível", url);
+            }
 
             return new RawResponse(
                     response.body(),

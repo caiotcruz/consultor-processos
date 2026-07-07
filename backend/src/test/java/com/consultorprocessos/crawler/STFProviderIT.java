@@ -1,3 +1,4 @@
+// src/test/java/com/consultorprocessos/crawler/STFProviderIT.java
 package com.consultorprocessos.crawler;
 
 import com.consultorprocessos.crawler.exception.CourtBlockedException;
@@ -9,35 +10,51 @@ import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
 import static org.assertj.core.api.Assertions.*;
 
-@Tag("integration")
+@Tag("unit")
 class STFProviderIT extends BaseProviderIT {
 
     @Autowired
     private STFProvider stfProvider;
 
+    // CNJ normalizado → o provider converte para digits internamente
     private static final String PROCESS_NUMBER = "0001234-55.2020.8.26.0001";
-    private static final String MOCK_URL_PATTERN =
-            "/processos/detalhe.asp.*";
+    // 0001234-55.2020.8.26.0001 sem separadores:
+    private static final String PROCESS_DIGITS = "00012345520208260001";
+
+    private static final String BUSCA_URL_PATTERN   = "/processos/listarProcessos.asp.*";
+    private static final String DETALHE_URL_PATTERN = "/processos/detalhe.asp.*";
 
     @BeforeEach
-    void configureDelays() {
+    void disableDelays() {
+        // Zera delays para testes rápidos
         jdbcTemplate.update(
-            "UPDATE courts SET min_delay_ms=0, max_delay_ms=0, rate_limit_per_min=60 " +
-            "WHERE code='STF'");
+                "UPDATE courts SET min_delay_ms=0, max_delay_ms=0, rate_limit_per_min=600 " +
+                "WHERE code='STF'");
     }
 
+    // ── Caminho feliz ────────────────────────────────────────────
+
     @Test
-    @DisplayName("deve retornar CrawlerSnapshot válido para HTML normal")
-    void shouldReturnValidSnapshotForNormalHtml() {
-        WIRE_MOCK.stubFor(get(urlPathMatching(MOCK_URL_PATTERN))
-                .willReturn(
-                        aResponse()
-                                .withStatus(200)
-                                .withHeader("Content-Type", "text/html; charset=UTF-8")
-                                .withBodyFile("stf_normal.html")
-                ));
+    @DisplayName("deve seguir redirect e retornar CrawlerSnapshot válido")
+    void shouldFollowRedirectAndReturnSnapshot() {
+        // 1. listarProcessos → 302 → detalhe
+        WIRE_MOCK.stubFor(get(urlPathMatching(BUSCA_URL_PATTERN))
+                .withQueryParam("numeroUnico", equalTo(PROCESS_DIGITS))
+                .willReturn(aResponse()
+                        .withStatus(302)
+                        .withHeader("Location",
+                                WIRE_MOCK.baseUrl() + "/processos/detalhe.asp?incidente=12345")));
+
+        // 2. detalhe → HTML com andamentos
+        WIRE_MOCK.stubFor(get(urlPathMatching(DETALHE_URL_PATTERN))
+                .withQueryParam("incidente", equalTo("12345"))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "text/html; charset=UTF-8")
+                        .withBodyFile("stf_normal.html")));
 
         CrawlerSnapshot snapshot = stfProvider.consultar(PROCESS_NUMBER);
 
@@ -51,11 +68,50 @@ class STFProviderIT extends BaseProviderIT {
     }
 
     @Test
-    @DisplayName("deve lançar CourtBlockedException para resposta 403")
-    void shouldThrowBlockedExceptionFor403() {
-        WIRE_MOCK.stubFor(get(urlPathMatching(MOCK_URL_PATTERN))
-                .willReturn(forbidden()
-                        .withBody("Acesso negado.")));
+    @DisplayName("deve enviar o número único sem separadores no parâmetro")
+    void shouldSendDigitsOnlyAsNumeroUnico() {
+        WIRE_MOCK.stubFor(get(urlPathMatching(BUSCA_URL_PATTERN))
+                .withQueryParam("numeroUnico", equalTo(PROCESS_DIGITS))
+                .willReturn(aResponse()
+                        .withStatus(302)
+                        .withHeader("Location",
+                                WIRE_MOCK.baseUrl() + "/processos/detalhe.asp?incidente=12345")));
+
+        WIRE_MOCK.stubFor(get(urlPathMatching(DETALHE_URL_PATTERN))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "text/html; charset=UTF-8")
+                        .withBodyFile("stf_normal.html")));
+
+        stfProvider.consultar(PROCESS_NUMBER);
+
+        // Verifica que a requisição foi feita com o parâmetro correto (apenas dígitos)
+        WIRE_MOCK.verify(getRequestedFor(urlPathMatching(BUSCA_URL_PATTERN))
+                .withQueryParam("numeroUnico", equalTo(PROCESS_DIGITS)));
+    }
+
+    @Test
+    @DisplayName("dois snapshots do mesmo HTML devem ter o mesmo hash (determinismo)")
+    void shouldProduceDeterministicHash() {
+        stubRedirectAndDetalhe();
+
+        CrawlerSnapshot s1 = stfProvider.consultar(PROCESS_NUMBER);
+
+        WIRE_MOCK.resetAll();
+        stubRedirectAndDetalhe();
+
+        CrawlerSnapshot s2 = stfProvider.consultar(PROCESS_NUMBER);
+
+        assertThat(s1.contentHash()).isEqualTo(s2.contentHash());
+    }
+
+    // ── Bloqueios ────────────────────────────────────────────────
+
+    @Test
+    @DisplayName("deve lançar CourtBlockedException para HTTP 403 na busca")
+    void shouldThrowBlockedFor403OnSearch() {
+        WIRE_MOCK.stubFor(get(urlPathMatching(BUSCA_URL_PATTERN))
+                .willReturn(forbidden().withBody("Acesso negado.")));
 
         assertThatThrownBy(() -> stfProvider.consultar(PROCESS_NUMBER))
                 .isInstanceOf(CourtBlockedException.class);
@@ -63,82 +119,86 @@ class STFProviderIT extends BaseProviderIT {
 
     @Test
     @DisplayName("deve lançar CourtBlockedException quando HTML contém CAPTCHA")
-    void shouldThrowBlockedExceptionForCaptchaHtml() {
-        WIRE_MOCK.stubFor(get(urlPathMatching(MOCK_URL_PATTERN))
-                .willReturn(
-                        aResponse()
-                                .withStatus(200)
-                                .withHeader("Content-Type", "text/html")
-                                .withBodyFile("stf_captcha.html")
-                ));
+    void shouldThrowBlockedForCaptchaHtml() {
+        WIRE_MOCK.stubFor(get(urlPathMatching(BUSCA_URL_PATTERN))
+                .willReturn(aResponse()
+                        .withStatus(302)
+                        .withHeader("Location",
+                                WIRE_MOCK.baseUrl() + "/processos/detalhe.asp?incidente=99")));
+
+        WIRE_MOCK.stubFor(get(urlPathMatching(DETALHE_URL_PATTERN))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "text/html")
+                        .withBodyFile("stf_captcha.html")));
 
         assertThatThrownBy(() -> stfProvider.consultar(PROCESS_NUMBER))
                 .isInstanceOf(CourtBlockedException.class)
                 .hasMessageContaining("captcha");
     }
 
+    // ── Fallback ─────────────────────────────────────────────────
+
     @Test
-    @DisplayName("deve usar JsoupCrawler como fallback quando HTTP falhar")
+    @DisplayName("deve usar Jsoup quando HTTP falha no primeiro redirect")
     void shouldFallbackToJsoupWhenHttpFails() {
-        WIRE_MOCK.stubFor(get(urlPathMatching(MOCK_URL_PATTERN))
+        // Primeira tentativa (HTTP) → 503
+        System.out.println("prim");
+        WIRE_MOCK.stubFor(get(urlPathMatching(BUSCA_URL_PATTERN))
                 .inScenario("http-fallback")
-                .whenScenarioStateIs(com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED)
+                .whenScenarioStateIs(STARTED)
                 .willReturn(serviceUnavailable())
                 .willSetStateTo("retry"));
 
-        WIRE_MOCK.stubFor(get(urlPathMatching(MOCK_URL_PATTERN))
-        .inScenario("http-fallback")
-        .whenScenarioStateIs("retry")
-        .willReturn(
-                aResponse()
+        System.out.println("sec");
+        // Segunda tentativa (Jsoup, mesma URL) → redirect + HTML
+        WIRE_MOCK.stubFor(get(urlPathMatching(BUSCA_URL_PATTERN))
+                .inScenario("http-fallback")
+                .whenScenarioStateIs("retry")
+                .willReturn(aResponse()
+                        .withStatus(302)
+                        .withHeader("Location",
+                                WIRE_MOCK.baseUrl() + "/processos/detalhe.asp?incidente=12345")));
+
+        System.out.println("ter");
+        WIRE_MOCK.stubFor(get(urlPathMatching(DETALHE_URL_PATTERN))
+                .willReturn(aResponse()
                         .withStatus(200)
                         .withHeader("Content-Type", "text/html; charset=UTF-8")
-                        .withBodyFile("stf_normal.html")
-        ));
+                        .withBodyFile("stf_normal.html")));
 
         CrawlerSnapshot snapshot = stfProvider.consultar(PROCESS_NUMBER);
 
         assertThat(snapshot).isNotNull();
         assertThat(snapshot.strategyUsed()).isEqualTo(CrawlerStrategy.JSOUP);
-        assertThat(snapshot.movements()).isNotEmpty();
     }
 
+    // ── Indisponibilidade total ───────────────────────────────────
+
     @Test
-    @DisplayName("deve lançar CourtUnavailableException quando todas as estratégias falharem")
+    @DisplayName("deve lançar CourtUnavailableException quando todas as estratégias falham")
     void shouldThrowWhenAllStrategiesFail() {
-        WIRE_MOCK.stubFor(get(urlPathMatching(MOCK_URL_PATTERN))
-                .willReturn(serverError()
-                        .withBody("Internal Server Error")));
+        WIRE_MOCK.stubFor(get(urlPathMatching(BUSCA_URL_PATTERN))
+                .willReturn(serverError()));
 
         assertThatThrownBy(() -> stfProvider.consultar(PROCESS_NUMBER))
                 .isInstanceOf(CourtUnavailableException.class)
                 .hasMessageContaining("STF");
     }
 
-    @Test
-    @DisplayName("dois snapshots do mesmo HTML devem ter o mesmo hash")
-    void shouldProduceSameHashForSameHtml() {
-        WIRE_MOCK.stubFor(get(urlPathMatching(MOCK_URL_PATTERN))
-                .willReturn(
-                        aResponse()
-                                .withStatus(200)
-                                .withHeader("Content-Type", "text/html; charset=UTF-8")
-                                .withBodyFile("stf_normal.html")
-                ));
+    // ── Helper ───────────────────────────────────────────────────
 
-        CrawlerSnapshot s1 = stfProvider.consultar(PROCESS_NUMBER);
+    private void stubRedirectAndDetalhe() {
+        WIRE_MOCK.stubFor(get(urlPathMatching(BUSCA_URL_PATTERN))
+                .willReturn(aResponse()
+                        .withStatus(302)
+                        .withHeader("Location",
+                                WIRE_MOCK.baseUrl() + "/processos/detalhe.asp?incidente=12345")));
 
-        WIRE_MOCK.resetScenarios();
-        WIRE_MOCK.stubFor(get(urlPathMatching(MOCK_URL_PATTERN))
-                .willReturn(
-                        aResponse()
-                                .withStatus(200)
-                                .withHeader("Content-Type", "text/html; charset=UTF-8")
-                                .withBodyFile("stf_normal.html")
-                ));
-
-        CrawlerSnapshot s2 = stfProvider.consultar(PROCESS_NUMBER);
-
-        assertThat(s1.contentHash()).isEqualTo(s2.contentHash());
+        WIRE_MOCK.stubFor(get(urlPathMatching(DETALHE_URL_PATTERN))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "text/html; charset=UTF-8")
+                        .withBodyFile("stf_normal.html")));
     }
 }

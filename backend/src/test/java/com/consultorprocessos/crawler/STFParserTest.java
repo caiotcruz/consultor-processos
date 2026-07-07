@@ -1,9 +1,10 @@
+// src/test/java/com/consultorprocessos/crawler/STFParserTest.java
 package com.consultorprocessos.crawler;
 
 import com.consultorprocessos.crawler.exception.ParseException;
+import com.consultorprocessos.crawler.model.CrawlerStrategy;
 import com.consultorprocessos.crawler.model.ParsedData;
 import com.consultorprocessos.crawler.model.RawResponse;
-import com.consultorprocessos.crawler.model.CrawlerStrategy;
 import com.consultorprocessos.crawler.model.RawResponseType;
 import com.consultorprocessos.crawler.provider.stf.STFParser;
 import org.junit.jupiter.api.DisplayName;
@@ -20,67 +21,124 @@ class STFParserTest {
 
     private final STFParser parser = new STFParser();
 
-    @Test
-    @DisplayName("deve parsear HTML normal com 3 movimentações")
-    void shouldParseNormalHtml() {
-        String html = loadFixture("stf/v1.0.0_processo_normal.html");
+    // ── Caminho feliz ────────────────────────────────────────────
 
-        ParsedData result = parser.parse(raw(html));
+    @Test
+    @DisplayName("deve parsear fixture normal com 3 andamentos")
+    void shouldParseNormalFixture() {
+        ParsedData result = parser.parse(loadFixture("stf/v1.0.0_processo_normal.html"));
 
         assertThat(result.movements()).hasSize(3);
-        assertThat(result.movements().get(0).rawDate()).isEqualTo("15/03/2025");
-        assertThat(result.movements().get(0).rawDescription())
-                .isEqualTo("Conclusos ao relator para deliberação.");
-        assertThat(result.movements().get(1).rawDate()).isEqualTo("20/01/2025");
     }
 
     @Test
-    @DisplayName("deve retornar lista vazia para processo sem movimentações")
-    void shouldReturnEmptyForNoMovements() {
-        String html = loadFixture("stf/v1.0.0_sem_movimentacoes.html");
+    @DisplayName("primeiro andamento deve ter data 11/02/2026")
+    void shouldExtractDateFromFirstAndamento() {
+        ParsedData result = parser.parse(loadFixture("stf/v1.0.0_processo_normal.html"));
+
+        assertThat(result.movements().get(0).rawDate()).isEqualTo("11/02/2026");
+    }
+
+    @Test
+    @DisplayName("andamento com detalhe complementar deve concatenar descrição")
+    void shouldConcatenateDetalheWhenPresent() {
+        ParsedData result = parser.parse(loadFixture("stf/v1.0.0_processo_normal.html"));
+
+        // Primeiro andamento: "Baixa ao arquivo do STF, Guia nº — Guia: 4418/2026..."
+        String desc = result.movements().get(0).rawDescription();
+        assertThat(desc).contains("Baixa ao arquivo do STF, Guia nº");
+        assertThat(desc).contains("Guia: 4418/2026");
+        assertThat(desc).contains(" — "); // separador
+    }
+
+    @Test
+    @DisplayName("andamento sem detalhe complementar deve usar apenas o nome")
+    void shouldUseOnlyNomeWhenDetalheIsEmpty() {
+        ParsedData result = parser.parse(loadFixture("stf/v1.0.0_processo_normal.html"));
+
+        // Segundo andamento: "Transitado em julgado" — sem detalhe
+        String desc = result.movements().get(1).rawDescription();
+        assertThat(desc).isEqualTo("Transitado em julgado");
+        assertThat(desc).doesNotContain(" — ");
+    }
+
+    @Test
+    @DisplayName("andamento com detalhe deve preservar texto do detalhe")
+    void shouldPreserveDetalheText() {
+        ParsedData result = parser.parse(loadFixture("stf/v1.0.0_processo_normal.html"));
+
+        // Terceiro andamento: "Acórdão publicado no DJe — DJe nº 275..."
+        String desc = result.movements().get(2).rawDescription();
+        assertThat(desc).contains("Acórdão publicado no DJe");
+        assertThat(desc).contains("DJe nº 275");
+    }
+
+    // ── Processo sem andamentos ──────────────────────────────────
+
+    @Test
+    @DisplayName("deve retornar lista vazia quando não há andamentos")
+    void shouldReturnEmptyForNoAndamentos() {
+        ParsedData result = parser.parse(loadFixture("stf/v1.0.0_sem_movimentacoes.html"));
+
+        assertThat(result.movements()).isEmpty();
+    }
+
+    // ── Erros de layout ──────────────────────────────────────────
+
+    @Test
+    @DisplayName("deve lançar ParseException quando div.processo-andamentos não existir")
+    void shouldThrowWhenContainerMissing() {
+        RawResponse response = raw("<html><body><p>Página sem andamentos</p></body></html>");
+
+        assertThatThrownBy(() -> parser.parse(response))
+                .isInstanceOf(ParseException.class)
+                .hasMessageContaining("processo-andamentos");
+    }
+
+    @Test
+    @DisplayName("deve ignorar li sem h5.andamento-nome")
+    void shouldIgnoreLiWithoutNome() {
+        String html = """
+                <!DOCTYPE html>
+                <html><body>
+                <div class="processo-andamentos m-t-8">
+                  <ul>
+                    <li>
+                      <div class="andamento-detalhe">
+                        <div class="andamento-data">01/01/2025</div>
+                        <!-- sem h5.andamento-nome -->
+                      </div>
+                    </li>
+                  </ul>
+                </div>
+                </body></html>
+                """;
 
         ParsedData result = parser.parse(raw(html));
 
         assertThat(result.movements()).isEmpty();
     }
 
-    @Test
-    @DisplayName("deve lançar ParseException quando seletor principal não for encontrado")
-    void shouldThrowParseExceptionForUnknownHtml() {
-        String html = "<html><body><p>Página sem tabela de movimentações</p></body></html>";
-
-        assertThatThrownBy(() -> parser.parse(raw(html)))
-                .isInstanceOf(ParseException.class)
-                .hasMessageContaining("tabelaTodasMovimentacoes");
-    }
+    // ── Metadados ────────────────────────────────────────────────
 
     @Test
-    @DisplayName("deve ter versão '1.0.0' e código 'STF'")
-    void shouldHaveCorrectVersionAndCode() {
+    @DisplayName("versão deve ser '1.0.0' e código 'STF'")
+    void shouldHaveCorrectMetadata() {
         assertThat(parser.getVersion()).isEqualTo("1.0.0");
         assertThat(parser.getCourtCode()).isEqualTo("STF");
     }
 
-    @Test
-    @DisplayName("deve ignorar linhas sem células de data ou descrição")
-    void shouldIgnoreRowsWithoutRequiredCells() {
-        String html = loadFixture("stf/v1.0.0_processo_normal.html")
-                .replace("class=\"andamento-data\"", "class=\"outro-campo\"");
+    // ── Helpers ──────────────────────────────────────────────────
 
-        ParsedData result = parser.parse(raw(html));
-
-        assertThat(result.movements()).isEmpty();
-    }
-
-
-    private String loadFixture(String path) {
+    private RawResponse loadFixture(String path) {
         try {
-            return new String(
+            String html = new String(
                     getClass().getClassLoader()
                             .getResourceAsStream("fixtures/parsers/" + path)
                             .readAllBytes(),
                     StandardCharsets.UTF_8
             );
+            return raw(html);
         } catch (IOException | NullPointerException e) {
             throw new RuntimeException("Fixture não encontrada: fixtures/parsers/" + path, e);
         }

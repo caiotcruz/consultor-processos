@@ -19,75 +19,118 @@ import java.util.List;
 /**
  * Parser do portal do STF.
  *
- * Seletor principal: table#tabelaTodasMovimentacoes
+ * Fluxo de consulta:
+ *   GET /processos/listarProcessos.asp?numeroUnico={20 dígitos}
+ *     → 302 → GET /processos/detalhe.asp?incidente={id}
+ *       → HTML completo → este parser extrai div.processo-andamentos
  *
- * Estrutura esperada:
- *   <table id="tabelaTodasMovimentacoes">
- *     <tbody>
- *       <tr class="andamento-linha">
- *         <td class="andamento-data">DD/MM/YYYY</td>
- *         <td class="andamento-descricao">Descrição da movimentação</td>
- *       </tr>
- *     </tbody>
- *   </table>
+ * Estrutura real dos andamentos (capturada em 2026):
  *
- * IMPORTANTE: Quando o portal do STF alterar seu layout, este parser precisará
- * ser atualizado. Incrementar a versão e registrar nova ParserVersion no banco.
+ *   <div class="processo-andamentos m-t-8">
+ *     <ul>
+ *       <li>
+ *         <div class="andamento-detalhe">
+ *           <div class="andamento-data">DD/MM/YYYY</div>
+ *           <h5 class="andamento-nome">Descrição principal</h5>
+ *           <div class="col-md-9 p-0">Detalhe complementar (opcional)</div>
+ *         </div>
+ *       </li>
+ *     </ul>
+ *   </div>
+ *
+ * Versão 1.0.0 — primeira implementação real contra o portal.
  */
 @Component
 @Slf4j
 public class STFParser implements CourtParser {
 
-    private static final String PARSER_VERSION    = "1.0.0";
-    private static final String COURT_CODE        = "STF";
-    private static final String TABLE_SELECTOR    = "table#tabelaTodasMovimentacoes";
-    private static final String ROW_SELECTOR      = "tr.andamento-linha";
-    private static final String DATE_SELECTOR     = "td.andamento-data";
-    private static final String DESC_SELECTOR     = "td.andamento-descricao";
+    private static final String PARSER_VERSION        = "1.0.0";
+    private static final String COURT_CODE            = "STF";
+
+    // Contêiner principal dos andamentos
+    private static final String CONTAINER_SELECTOR   = "div.processo-andamentos";
+
+    // Cada item é um <li> dentro do <ul> do contêiner
+    private static final String ITEM_SELECTOR        = "li";
+
+    // Data e descrição dentro de cada item
+    private static final String DATE_SELECTOR        = "div.andamento-data";
+    private static final String NOME_SELECTOR        = "h5.andamento-nome";
+
+    // Detalhe complementar: div.col-md-9.p-0 dentro de andamento-detalhe
+    // Presente em alguns andamentos (ex: número de guia, DJe, etc.)
+    private static final String DETALHE_CONTAINER    = "div.andamento-detalhe";
+    private static final String DETALHE_SELECTOR     = "div.col-md-9.p-0";
 
     @Override
     public ParsedData parse(RawResponse rawResponse) {
         Document doc = Jsoup.parse(rawResponse.content());
 
-        Element table = doc.selectFirst(TABLE_SELECTOR);
-        if (table == null) {
+        Element container = doc.selectFirst(CONTAINER_SELECTOR);
+        if (container == null) {
             throw new ParseException(String.format(
-                    "Seletor '%s' não encontrado no HTML do STF. " +
-                    "O layout do portal pode ter mudado. Parser versão: %s",
-                    TABLE_SELECTOR, PARSER_VERSION));
+                    "Seletor '%s' não encontrado. " +
+                    "O layout do portal STF pode ter mudado. Parser versão: %s",
+                    CONTAINER_SELECTOR, PARSER_VERSION));
         }
 
-        Elements rows = table.select(ROW_SELECTOR);
+        Elements items = container.select(ITEM_SELECTOR);
         List<RawMovement> movements = new ArrayList<>();
 
-        for (Element row : rows) {
-            Element dateEl = row.selectFirst(DATE_SELECTOR);
-            Element descEl = row.selectFirst(DESC_SELECTOR);
+        for (Element item : items) {
+            Element dateEl = item.selectFirst(DATE_SELECTOR);
+            Element nomeEl = item.selectFirst(NOME_SELECTOR);
 
-            if (dateEl == null || descEl == null) {
-                log.debug("[STF] Linha sem células esperadas, ignorando: {}", row.html());
+            if (nomeEl == null) {
+                log.debug("[STF] Item sem h5.andamento-nome, ignorando.");
                 continue;
             }
 
-            String date = dateEl.text().trim();
-            String desc = descEl.text().trim();
+            String date = dateEl != null ? dateEl.text().trim() : "";
+            String nome = nomeEl.text().trim();
+            String detalhe = extractDetalhe(item);
 
-            if (!desc.isBlank()) {
-                movements.add(new RawMovement(date, desc));
+            // Concatena detalhe complementar quando presente e não redundante
+            String fullDescription = buildDescription(nome, detalhe);
+
+            if (!fullDescription.isBlank()) {
+                movements.add(new RawMovement(date, fullDescription));
             }
         }
 
-        String processNumber = extractProcessNumber(doc);
-
-        log.debug("[STF] Parseadas {} movimentações. processo={}",
-                movements.size(), processNumber);
-
-        return new ParsedData(processNumber, movements);
+        log.debug("[STF] Parseados {} andamentos.", movements.size());
+        return new ParsedData("desconhecido", movements);
     }
 
-    private String extractProcessNumber(Document doc) {
-        Element heading = doc.selectFirst("h2.heading-4");
-        return heading != null ? heading.text().trim() : "desconhecido";
+    /**
+     * Extrai o texto complementar do andamento (ex: número de guia, DJe, etc.).
+     * Busca o primeiro div.col-md-9.p-0 dentro de andamento-detalhe que tenha conteúdo.
+     */
+    private String extractDetalhe(Element item) {
+        Element detalheContainer = item.selectFirst(DETALHE_CONTAINER);
+        if (detalheContainer == null) return "";
+
+        for (Element div : detalheContainer.select(DETALHE_SELECTOR)) {
+            String text = div.text().trim();
+            if (!text.isBlank()) {
+                return text;
+            }
+        }
+        return "";
+    }
+
+    /**
+     * Constrói a descrição final concatenando o nome e o detalhe.
+     * Separa com " — " quando ambos estão presentes.
+     */
+    private String buildDescription(String nome, String detalhe) {
+        if (detalhe.isBlank()) {
+            return nome;
+        }
+        if (nome.isBlank()) {
+            return detalhe;
+        }
+        return nome + " — " + detalhe;
     }
 
     @Override
