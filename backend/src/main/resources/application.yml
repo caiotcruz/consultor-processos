@@ -123,7 +123,7 @@ app:
     eproc:
       base-url: ${EPROC_BASE_URL:https://eproc1g-cp.tjrj.jus.br}
     stjrj:
-      base-url: ${STJRJ_BASE_URL:https://www3.tjrj.jus.br/consultaprocessual}
+      base-url: ${STJRJ_BASE_URL:https://www3.tjrj.jus.br}
   
   jwt:
     private-key: ${JWT_PRIVATE_KEY:}   

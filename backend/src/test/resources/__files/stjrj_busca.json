@@ -1,0 +1,25 @@
+[
+  {
+    "numProcesso": "2015.001.128775-7",
+    "tipoProcesso": 1,
+    "codigoCnj": "0143917-50.2015.8.19.0001",
+    "nomeComarca": "Comarca da Capital",
+    "descricaoServentia": "Cartório da 50ª Vara Cível",
+    "classe": "Procedimento Sumário",
+    "assunto": "Honorários Profissionais",
+    "ultimoMovimento": "Juntada",
+    "isProcessoVirtual": true,
+    "idProcesso": 115201313,
+    "statusMigradoPje": 0
+  },
+  {
+    "numProcesso": "2019.001.77927",
+    "tipoProcesso": 2,
+    "codigoCnj": "0143917-50.2015.8.19.0001",
+    "nomeComarca": "Comarca da Capital",
+    "descricaoServentia": "DECIMA TERCEIRA CAMARA DE DIREITO PRIVADO",
+    "classe": "APELAÇÃO",
+    "isProcessoVirtual": true,
+    "idProcesso": 126825135
+  }
+]

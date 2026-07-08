@@ -1,0 +1,32 @@
+{
+  "movimentosProc": [
+    {
+      "codTipAnd": 6,
+      "ordem": 214,
+      "dtMovimento": "26/06/2026",
+      "descrMov": "Juntada - Petição",
+      "descricao": "Documento eletrônico juntado de forma automática."
+    },
+    {
+      "codTipAnd": 1,
+      "ordem": 213,
+      "dtMovimento": "23/06/2026",
+      "descrMov": "Conclusão ao Juiz",
+      "descricao": "O sistema eletrônico não aponta a existência de processo apensado a este feito. Outrossim, deve o exequente esclarecer qual o vínculo do mencionado processo."
+    },
+    {
+      "codTipAnd": 4,
+      "ordem": 212,
+      "dtMovimento": "22/06/2026",
+      "descrMov": "Ato Ordinatório Praticado",
+      "descricao": "Certifico que a parte ré não se manifestou quanto ao despacho de fl. 1787, apesar de intimada."
+    },
+    {
+      "codTipAnd": 5,
+      "ordem": 211,
+      "dtMovimento": "20/06/2026",
+      "descrMov": "Decurso de Prazo",
+      "descricao": null
+    }
+  ]
+}

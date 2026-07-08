@@ -6,82 +6,76 @@ import com.consultorprocessos.crawler.model.ParsedData;
 import com.consultorprocessos.crawler.model.RawMovement;
 import com.consultorprocessos.crawler.model.RawResponse;
 import com.consultorprocessos.crawler.provider.CourtParser;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Parser do TJRJ (Tribunal de Justiça do Estado do Rio de Janeiro).
- *
- * Seletor principal: div#listaMovimentacoes
- *
- * Estrutura esperada:
- *   <div id="listaMovimentacoes">
- *     <div class="movimentacao">
- *       <div class="dataMovimentacao">DD/MM/YYYY</div>
- *       <div class="descricaoMovimentacao">Texto</div>
- *     </div>
- *   </div>
- */
 @Component
+@RequiredArgsConstructor
 @Slf4j
 public class STJRJParser implements CourtParser {
 
-    private static final String PARSER_VERSION = "1.0.0";
-    private static final String COURT_CODE     = "STJRJ";
-    private static final String LIST_SELECTOR  = "div#listaMovimentacoes";
-    private static final String ITEM_SELECTOR  = "div.movimentacao";
-    private static final String DATE_SELECTOR  = "div.dataMovimentacao, .dataMovimentacao";
-    private static final String DESC_SELECTOR  = "div.descricaoMovimentacao, .descricaoMovimentacao";
+    private static final String PARSER_VERSION     = "1.0.0";
+    private static final String COURT_CODE         = "STJRJ";
+    private static final String MOVIMENTOS_KEY     = "movimentosProc";
+    private static final String FIELD_DT_MOVIMENTO = "dtMovimento";
+    private static final String FIELD_DESCR_MOV    = "descrMov";
+    private static final String FIELD_DESCRICAO    = "descricao";
+
+    private final ObjectMapper objectMapper;
 
     @Override
     public ParsedData parse(RawResponse rawResponse) {
-        Document doc = Jsoup.parse(rawResponse.content());
+        try {
+            JsonNode root = objectMapper.readTree(rawResponse.content());
 
-        Element listContainer = doc.selectFirst(LIST_SELECTOR);
-        if (listContainer == null) {
-            throw new ParseException(String.format(
-                    "Seletor '%s' não encontrado no HTML do TJRJ. " +
-                    "O layout pode ter mudado. Parser versão: %s",
-                    LIST_SELECTOR, PARSER_VERSION));
-        }
-
-        Elements items = listContainer.select(ITEM_SELECTOR);
-        List<RawMovement> movements = new ArrayList<>();
-
-        for (Element item : items) {
-            Element dateEl = item.selectFirst(DATE_SELECTOR);
-            Element descEl = item.selectFirst(DESC_SELECTOR);
-
-            if (dateEl == null || descEl == null) {
-                log.debug("[STJRJ] Item sem elementos esperados, ignorando.");
-                continue;
+            JsonNode movimentosNode = root.path(MOVIMENTOS_KEY);
+            if (movimentosNode.isMissingNode() || !movimentosNode.isArray()) {
+                throw new ParseException(String.format(
+                        "Campo '%s' não encontrado ou inválido no JSON do TJRJ. " +
+                        "Parser versão: %s",
+                        MOVIMENTOS_KEY, PARSER_VERSION));
             }
 
-            String date = dateEl.text().trim();
-            String desc = descEl.text().trim();
+            List<RawMovement> movements = new ArrayList<>();
+            for (JsonNode mov : movimentosNode) {
+                String date      = mov.path(FIELD_DT_MOVIMENTO).asText("").trim();
+                String descrMov  = mov.path(FIELD_DESCR_MOV).asText("").trim();
+                String descricao = extractDescricao(mov);
 
-            if (!desc.isBlank()) {
-                movements.add(new RawMovement(date, desc));
+                String fullDescription = buildDescription(descrMov, descricao);
+
+                if (!fullDescription.isBlank()) {
+                    movements.add(new RawMovement(date, fullDescription));
+                }
             }
+
+            log.debug("[TJRJ] Parseados {} movimentos.", movements.size());
+            return new ParsedData("desconhecido", movements);
+
+        } catch (ParseException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ParseException(
+                    "Falha ao parsear JSON do TJRJ: " + e.getMessage());
         }
-
-        String processNumber = extractProcessNumber(doc);
-        log.debug("[STJRJ] Parseadas {} movimentações. processo={}",
-                movements.size(), processNumber);
-
-        return new ParsedData(processNumber, movements);
     }
 
-    private String extractProcessNumber(Document doc) {
-        Element el = doc.selectFirst("span.numProcesso");
-        return el != null ? el.text().trim() : "desconhecido";
+    private String extractDescricao(JsonNode mov) {
+        JsonNode node = mov.path(FIELD_DESCRICAO);
+        if (node.isNull() || node.isMissingNode()) return "";
+        return node.asText("").trim();
+    }
+
+    private String buildDescription(String descrMov, String descricao) {
+        if (descricao.isBlank()) return descrMov;
+        if (descrMov.isBlank())  return descricao;
+        return descrMov + " — " + descricao;
     }
 
     @Override

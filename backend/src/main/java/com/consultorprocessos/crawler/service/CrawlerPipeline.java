@@ -174,4 +174,48 @@ public class CrawlerPipeline {
             throw new IllegalStateException("Falha ao serializar movimentos para JSON", e);
         }
     }
+
+        public void applyPreCrawlStrategies(String courtCode) {
+                Court court = courtRepository.findByCode(courtCode)
+                        .orElseThrow(() -> new IllegalStateException(
+                                "Tribunal não encontrado: " + courtCode));
+                rateLimiter.acquire(courtCode, court.getRateLimitPerMin());
+                delayStrategy.apply(court.getMinDelayMs(), court.getMaxDelayMs());      
+        }
+
+
+        public CrawlerSnapshot executeWithRawResponse(String courtCode,
+                                                String processNumber,
+                                                RawResponse rawResponse,
+                                                CourtParser parser) {
+                long startTime = System.currentTimeMillis();
+
+                blockDetector.check(rawResponse);
+                ParsedData parsedData = parser.parse(rawResponse);
+                List<Movement> movements = normalizer.normalize(parsedData);
+                String rawContentJson = buildCanonicalJson(processNumber, courtCode, movements);
+                String contentHash    = hashGenerator.sha256(rawContentJson);
+
+                long duration = System.currentTimeMillis() - startTime;
+                log.info("Pipeline (rawResponse) concluído: tribunal={} processo={} movimentos={} em {}ms",
+                        courtCode, processNumber, movements.size(), duration);
+
+                if (rawResponse.httpStatusCode() > 500){
+                        throw new CourtUnavailableException(
+                                "Servidor indisponível",
+                                "erro"
+                        );
+                }
+
+                return new CrawlerSnapshot(
+                        processNumber,
+                        courtCode,
+                        contentHash,
+                        rawContentJson,
+                        movements,
+                        rawResponse.strategy(),
+                        parser.getVersion(),
+                        Instant.now()
+                );
+        }
 }
