@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -65,6 +66,58 @@ public class CrawlerPipeline {
         log.info("Pipeline concluído: tribunal={} processo={} movimentos={} estratégia={} em {}ms",
                 courtCode, processNumber, movements.size(),
                 rawResponse.strategy(), duration);
+
+        return new CrawlerSnapshot(
+                processNumber,
+                courtCode,
+                contentHash,
+                rawContentJson,
+                movements,
+                rawResponse.strategy(),
+                parser.getVersion(),
+                Instant.now()
+        );
+    }
+
+    public CrawlerSnapshot executePostForm(String courtCode,
+                                        String processNumber,
+                                        String url,
+                                        Map<String, String> formData,
+                                        CourtParser parser) {
+
+        Court court = courtRepository.findByCode(courtCode)
+                .orElseThrow(() -> new IllegalStateException(
+                        "Tribunal não encontrado: " + courtCode));
+
+        long startTime = System.currentTimeMillis();
+
+        rateLimiter.acquire(courtCode, court.getRateLimitPerMin());
+
+        delayStrategy.apply(court.getMinDelayMs(), court.getMaxDelayMs());
+
+        CrawlContext context = CrawlContext.defaultContext(userAgentRotator.next());
+
+        RawResponse rawResponse = jsoupCrawler.fetchPost(url, formData, context);
+
+        blockDetector.check(rawResponse);
+
+        ParsedData parsedData = parser.parse(rawResponse);
+
+        List<Movement> movements = normalizer.normalize(parsedData);
+
+        String rawContentJson = buildCanonicalJson(processNumber, courtCode, movements);
+        String contentHash    = hashGenerator.sha256(rawContentJson);
+
+        long duration = System.currentTimeMillis() - startTime;
+        log.info("Pipeline POST concluído: tribunal={} processo={} eventos={} em {}ms",
+                courtCode, processNumber, movements.size(), duration);
+
+        if (rawResponse.httpStatusCode() > 500){
+                throw new CourtUnavailableException(
+                        "Servidor indisponível",
+                        url
+                );
+        }
 
         return new CrawlerSnapshot(
                 processNumber,

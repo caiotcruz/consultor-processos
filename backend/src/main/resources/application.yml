@@ -121,7 +121,7 @@ app:
     stf:
       base-url: ${STF_BASE_URL:https://portal.stf.jus.br}
     eproc:
-      base-url: ${EPROC_BASE_URL:https://eproc.trf2.jus.br/eproc2trf2}
+      base-url: ${EPROC_BASE_URL:https://eproc1g-cp.tjrj.jus.br}
     stjrj:
       base-url: ${STJRJ_BASE_URL:https://www3.tjrj.jus.br/consultaprocessual}
   

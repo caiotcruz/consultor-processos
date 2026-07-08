@@ -15,32 +15,19 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Parser do sistema eProc.
- *
- * Seletor principal: table#tblEventos
- *
- * Estrutura esperada:
- *   <table id="tblEventos">
- *     <tbody>
- *       <tr class="infraTrClara|infraTrEscura">
- *         <td>Seq</td>
- *         <td class="infraTd">DD/MM/YYYY</td>
- *         <td class="infraTd"><span class="eproc-descricao">...</span></td>
- *       </tr>
- *     </tbody>
- *   </table>
- *
- * Nota: eProc alternates between infraTrClara e infraTrEscura for row striping.
- */
 @Component
 @Slf4j
 public class EprocParser implements CourtParser {
 
-    private static final String PARSER_VERSION  = "1.0.0";
-    private static final String COURT_CODE      = "EPROC";
-    private static final String TABLE_SELECTOR  = "table#tblEventos";
-    private static final String ROW_SELECTOR    = "tr.infraTrClara, tr.infraTrEscura";
+    private static final String PARSER_VERSION    = "1.0.0";
+    private static final String COURT_CODE        = "EPROC";
+
+    private static final String TABLE_SELECTOR    = "table.infraTable[summary='Assuntos']";
+
+    private static final String ROW_SELECTOR      = "tr.infraTrClara, tr.infraTrEscura";
+
+    private static final int COL_DATA_HORA  = 1;
+    private static final int COL_DESCRICAO  = 2;
 
     @Override
     public ParsedData parse(RawResponse rawResponse) {
@@ -50,7 +37,7 @@ public class EprocParser implements CourtParser {
         if (table == null) {
             throw new ParseException(String.format(
                     "Seletor '%s' não encontrado no HTML do eProc. " +
-                    "O layout pode ter mudado. Parser versão: %s",
+                    "O layout do portal pode ter mudado. Parser versão: %s",
                     TABLE_SELECTOR, PARSER_VERSION));
         }
 
@@ -58,43 +45,31 @@ public class EprocParser implements CourtParser {
         List<RawMovement> movements = new ArrayList<>();
 
         for (Element row : rows) {
-            Elements cells = row.select("td.infraTd");
-            if (cells.size() < 2) {
-                log.debug("[eProc] Linha com células insuficientes, ignorando.");
+            Elements cells = row.select("td");
+
+            if (cells.size() < 3) {
+                log.debug("[eProc] Linha com {} células (esperado >= 3), ignorando.", cells.size());
                 continue;
             }
 
-            String date;
-            String desc;
+            String rawDateFull = cells.get(COL_DATA_HORA).text().trim();
+            String rawDate     = extractDateOnly(rawDateFull);
 
-            if (cells.size() >= 3) {
-                date = cells.get(0).text().trim();
-                desc = cells.get(1).text().trim();
+            String rawDescription = cells.get(COL_DESCRICAO).html().trim();
 
-                if (date.matches("\\d+")) {
-                    date = cells.get(1).text().trim();
-                    desc = cells.size() > 2 ? cells.get(2).text().trim() : "";
-                }
-            } else {
-                date = cells.get(0).text().trim();
-                desc = cells.get(1).text().trim();
-            }
-
-            if (!desc.isBlank()) {
-                movements.add(new RawMovement(date, desc));
+            if (!rawDescription.isBlank()) {
+                movements.add(new RawMovement(rawDate, rawDescription));
             }
         }
 
-        String processNumber = extractProcessNumber(doc);
-        log.debug("[eProc] Parseadas {} movimentações. processo={}",
-                movements.size(), processNumber);
-
-        return new ParsedData(processNumber, movements);
+        log.debug("[eProc] Parseados {} eventos.", movements.size());
+        return new ParsedData("desconhecido", movements);
     }
 
-    private String extractProcessNumber(Document doc) {
-        Element el = doc.getElementById("lblNúmeroProcesso");
-        return el != null ? el.text().trim() : "desconhecido";
+    private String extractDateOnly(String rawDateFull) {
+        if (rawDateFull == null || rawDateFull.isBlank()) return "";
+        int spaceIndex = rawDateFull.indexOf(' ');
+        return spaceIndex > 0 ? rawDateFull.substring(0, spaceIndex) : rawDateFull;
     }
 
     @Override

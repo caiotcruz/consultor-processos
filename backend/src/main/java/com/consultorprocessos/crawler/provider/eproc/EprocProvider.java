@@ -8,21 +8,17 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-/**
- * Provider do eProc (Processo Eletrônico dos Tribunais Federais).
- *
- * Estratégia primária: Jsoup (lida melhor com sessões e headers específicos do eProc).
- * Fallback: HTTP Direto (tratado automaticamente pelo CrawlerPipeline).
- *
- * Nota: para processos restritos, o eProc pode exigir login.
- * Esta versão suporta apenas consultas públicas.
- */
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 @Component
 @RequiredArgsConstructor
 @Slf4j
 public class EprocProvider implements CourtProvider {
 
     private static final String COURT_CODE = "EPROC";
+
+    private static final String CONTROLLER_PATH = "/eproc/externo_controlador.php";
 
     private final CrawlerPipeline pipeline;
     private final EprocParser      parser;
@@ -32,13 +28,33 @@ public class EprocProvider implements CourtProvider {
 
     @Override
     public CrawlerSnapshot consultar(String processNumber) {
-        String url = eprocBaseUrl +
-                     "/epaprocesso/servlet/ControladorPublico" +
-                     "?numeroDoProcesso=" + processNumber +
-                     "&acao=abrirLinkProcesso";
+        String formUrl = eprocBaseUrl + CONTROLLER_PATH
+                + "?acao=processo_consulta_publica"
+                + "&acao_origem=principal"
+                + "&acao_retorno=processo_consulta_publica";
 
-        log.debug("[eProc] Consultando: {}", url);
-        return pipeline.execute(COURT_CODE, processNumber, url, parser);
+        Map<String, String> formData = buildFormData(processNumber);
+
+        log.debug("[eProc] Consultando via POST: processo={} url={}",
+                processNumber, formUrl);
+
+        return pipeline.executePostForm(COURT_CODE, processNumber, formUrl, formData, parser);
+    }
+
+    private Map<String, String> buildFormData(String processNumber) {
+        Map<String, String> data = new LinkedHashMap<>();
+        data.put("acao",                  "processo_consulta_publica");
+        data.put("acao_origem",           "principal");
+        data.put("acao_retorno",          "processo_consulta_publica");
+        data.put("txtNumProcesso",        processNumber);
+        data.put("txtNumChave",           "");
+        data.put("txtNumChaveDocumento",  "");
+        data.put("txtStrParte",           "");
+        data.put("chkFonetica",           "N");
+        data.put("rdoTipo",               "CPF");
+        data.put("txtCpfCnpj",            "");
+        data.put("txtStrOAB",             "");
+        return data;
     }
 
     @Override

@@ -6,6 +6,9 @@ import com.consultorprocessos.crawler.model.CrawlerStrategy;
 import com.consultorprocessos.crawler.model.RawResponse;
 import com.consultorprocessos.crawler.model.RawResponseType;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.Map;
+
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -52,6 +55,46 @@ public class JsoupCrawler {
         } catch (Exception e) {
             throw new com.consultorprocessos.crawler.exception
                     .CourtUnavailableException("JSOUP", e.getMessage());
+        }
+    }
+
+    public RawResponse fetchPost(String url, Map<String, String> formData, CrawlContext context) {
+        try {
+            Connection connection = Jsoup.connect(url)
+                    .method(Connection.Method.POST)
+                    .data(formData)
+                    .userAgent(context.userAgent())
+                    .header("Accept-Language", "pt-BR,pt;q=0.9")
+                    .header("Content-Type", "application/x-www-form-urlencoded")
+                    .timeout(TIMEOUT_MS)
+                    .followRedirects(true)
+                    .ignoreHttpErrors(true);
+
+            if (context.hasCookies()) {
+                connection.cookies(context.cookies());
+            }
+
+            Connection.Response response = connection.execute();
+            Document doc = response.parse();
+            int statusCode = response.statusCode();
+
+            log.debug("JsoupCrawler POST: {} → HTTP {}", url, statusCode);
+
+            if (statusCode >= 500) {
+                throw new CourtUnavailableException("EPROC", "Servidor indisponível (HTTP " + statusCode + ")");
+            }
+
+            return new RawResponse(
+                    doc.html(),
+                    statusCode,
+                    RawResponseType.HTML,
+                    CrawlerStrategy.JSOUP
+            );
+        } catch (CourtUnavailableException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new com.consultorprocessos.crawler.exception
+                    .CourtUnavailableException("POST", e.getMessage());
         }
     }
 }
