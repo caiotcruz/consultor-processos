@@ -1,4 +1,3 @@
-// src/main/java/com/consultorprocessos/crawler/provider/stjrj/STJRJParser.java
 package com.consultorprocessos.crawler.provider.stjrj;
 
 import com.consultorprocessos.crawler.exception.ParseException;

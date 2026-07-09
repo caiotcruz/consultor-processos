@@ -25,6 +25,17 @@ import java.util.UUID;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.consultorprocessos.crawler.model.CrawlerSnapshot;
+import com.consultorprocessos.crawler.model.CrawlerStrategy;
+import com.consultorprocessos.crawler.model.Movement;
+import com.consultorprocessos.crawler.model.RawResponseType;
+import com.consultorprocessos.scheduler.model.CrawlRequestMessage;
+
+import java.time.Instant;
+import java.time.LocalDate;
+import java.util.List;
+
+
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
@@ -169,6 +180,51 @@ public abstract class BaseIntegrationTest {
         }
     }
 
+    protected UUID createProcessWithSubscription(String userEmail, String processNumber,
+                                                String courtCode) {
+        UUID processId = UUID.randomUUID();
+        UUID courtId   = jdbcTemplate.queryForObject(
+                "SELECT id FROM courts WHERE code = ?", UUID.class, courtCode);
+
+        jdbcTemplate.update("""
+                INSERT INTO processes (id, process_number, process_number_raw, court_id, status)
+                VALUES (?, ?, ?, ?, 'PENDING')
+                """, processId, processNumber, processNumber, courtId);
+
+        UUID userId = jdbcTemplate.queryForObject(
+                "SELECT id FROM users WHERE email = ?", UUID.class, userEmail);
+
+        jdbcTemplate.update("""
+                INSERT INTO process_subscriptions (id, user_id, process_id, active)
+                VALUES (gen_random_uuid(), ?, ?, true)
+                """, userId, processId);
+
+        return processId;
+    }
+
+    protected CrawlerSnapshot buildMockSnapshot(String processNumber, String courtCode) {
+        List<Movement> movements = List.of(
+                new Movement(LocalDate.of(2025, 1, 10), "Petição inicial distribuída."),
+                new Movement(LocalDate.of(2025, 2, 20), "Conclusos ao relator.")
+        );
+        String json = """
+                {"processNumber":"%s","courtCode":"%s","movements":[]}
+                """.formatted(processNumber, courtCode).strip();
+
+        return new CrawlerSnapshot(
+                processNumber, courtCode,
+                "abc123hash", json,
+                movements,
+                CrawlerStrategy.HTTP, "1.0.0", Instant.now()
+        );
+    }
+
+    protected CrawlRequestMessage buildCrawlMessage(UUID processId, String processNumber,
+                                                    String courtCode) {
+        UUID courtId = jdbcTemplate.queryForObject(
+                "SELECT id FROM courts WHERE code = ?", UUID.class, courtCode);
+        return new CrawlRequestMessage(processId, courtId, processNumber, courtCode, 0);
+    }
 
     @BeforeEach
     void cleanDatabase() {

@@ -1,4 +1,3 @@
-// src/main/java/com/consultorprocessos/mock/controller/MockCourtController.java
 package com.consultorprocessos.mock.controller;
 
 import com.consultorprocessos.mock.service.MockTribunalStateService;

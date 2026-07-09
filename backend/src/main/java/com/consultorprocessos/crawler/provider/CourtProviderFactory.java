@@ -1,6 +1,7 @@
 package com.consultorprocessos.crawler.provider;
 
 import com.consultorprocessos.crawler.exception.ProviderNotFoundException;
+import com.consultorprocessos.crawler.model.CrawlerSnapshot;
 import com.consultorprocessos.crawler.provider.mock.MockCourtProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,11 +39,20 @@ public class CourtProviderFactory {
 
     public CourtProvider getProvider(String courtCode) {
         if (mockProvider != null) {
-            log.debug("DEV: redirecionando consulta de '{}' para MockCourtProvider.", courtCode);
-            return mockProvider;
+            final String capturedCourtCode = courtCode.toUpperCase();
+            return new CourtProvider() {
+                @Override
+                public CrawlerSnapshot consultar(String processNumber) {
+                    return mockProvider.consultarCourt(capturedCourtCode, processNumber);
+                }
+                @Override
+                public String getCourtCode() {
+                    return capturedCourtCode;
+                }
+            };
         }
 
-        CourtProvider provider = providers.get(courtCode);
+        CourtProvider provider = providers.get(courtCode.toUpperCase());
         if (provider == null) {
             throw new ProviderNotFoundException(courtCode);
         }

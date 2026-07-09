@@ -21,6 +21,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -89,12 +92,31 @@ public class ProcessService {
 
     @Transactional(readOnly = true)
     public Page<ProcessSummaryResponse> listByUser(UserDetailsImpl principal,
-                                                   Boolean active,
-                                                   ProcessStatus status,
-                                                   Pageable pageable) {
-        return subscriptionRepository
-            .findByUserIdWithFilters(principal.getUserId(), active, status, pageable)
-            .map(this::toSummaryResponse);
+                                                Boolean active,
+                                                ProcessStatus status,
+                                                Pageable pageable) {
+        Page<ProcessSubscription> page = subscriptionRepository
+                .findByUserIdWithFilters(principal.getUserId(), active, status, pageable);
+
+        List<UUID> processIds = page.getContent().stream()
+                .map(sub -> sub.getProcess().getId())
+                .toList();
+
+        Map<UUID, String> lastMovementDescByProcess = loadLastMovementDescs(processIds);
+
+        return page.map(sub -> toSummaryResponse(sub, lastMovementDescByProcess));
+    }
+
+    private Map<UUID, String> loadLastMovementDescs(List<UUID> processIds) {
+        if (processIds.isEmpty()) {
+            return Map.of();
+        }
+        return historyRepository.findLatestByProcessIds(processIds).stream()
+                .collect(java.util.stream.Collectors.toMap(
+                        h -> h.getProcess().getId(),
+                        ProcessHistory::getDescription,
+                        (a, b) -> a
+                ));
     }
 
     @Transactional(readOnly = true)
@@ -188,11 +210,12 @@ public class ProcessService {
                 "Usuário não encontrado: " + userId));
     }
 
-    private ProcessSummaryResponse toSummaryResponse(ProcessSubscription sub) {
+    private ProcessSummaryResponse toSummaryResponse(ProcessSubscription sub,
+                                                    Map<UUID, String> lastMovementDescs) {
         Process process = sub.getProcess();
         Court   court   = process.getCourt();
 
-        String lastMovementDesc = null;
+        String lastMovementDesc = lastMovementDescs.get(process.getId());
 
         return new ProcessSummaryResponse(
             sub.getId(),
@@ -228,5 +251,35 @@ public class ProcessService {
             sub.getCreatedAt(),
             sub.getDeactivatedAt()
         );
+    }
+
+    @Transactional
+    public void markAsSuccessful(UUID processId) {
+        processRepository.findById(processId).ifPresent(p -> {
+            p.setStatus(ProcessStatus.OK);
+            p.setConsecutiveErrors(0);
+            p.setLastCheckedAt(Instant.now());
+            processRepository.save(p);
+        });
+    }
+
+    @Transactional
+    public void markAsBlocked(UUID processId) {
+        processRepository.findById(processId).ifPresent(p -> {
+            p.setStatus(ProcessStatus.BLOCKED);
+            p.setConsecutiveErrors(p.getConsecutiveErrors() + 1);
+            p.setLastCheckedAt(Instant.now());
+            processRepository.save(p);
+        });
+    }
+
+    @Transactional
+    public void markAsError(UUID processId) {
+        processRepository.findById(processId).ifPresent(p -> {
+            p.setConsecutiveErrors(p.getConsecutiveErrors() + 1);
+            p.setStatus(ProcessStatus.ERROR);
+            p.setLastCheckedAt(Instant.now());
+            processRepository.save(p);
+        });
     }
 }

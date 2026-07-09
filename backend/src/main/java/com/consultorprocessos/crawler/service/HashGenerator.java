@@ -1,4 +1,3 @@
-// src/main/java/com/consultorprocessos/crawler/service/HashGenerator.java
 package com.consultorprocessos.crawler.service;
 
 import com.consultorprocessos.crawler.model.CrawlerSnapshot;

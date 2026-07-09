@@ -55,7 +55,7 @@ public class LogAuthEmailService implements AuthEmailService {
     public String getLastTokenFor(String email, EmailType type) {
         return sentEmails.stream()
                 .filter(e -> e.to().equals(email) && e.type() == type)
-                .reduce((first, second) -> second)  // último elemento
+                .reduce((first, second) -> second)
                 .map(SentEmail::token)
                 .orElseThrow(() -> new IllegalStateException(
                     "Nenhum e-mail do tipo " + type + " encontrado para " + email));

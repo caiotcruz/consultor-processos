@@ -31,7 +31,7 @@ logging:
 
 app:
   scheduler:
-    enabled: false   
+    enabled: true   
     cron:    "0 */1 * * * *"
     lock-ttl-seconds: 50
 

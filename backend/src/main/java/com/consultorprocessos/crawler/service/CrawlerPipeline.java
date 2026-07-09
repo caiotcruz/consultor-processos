@@ -1,4 +1,3 @@
-// src/main/java/com/consultorprocessos/crawler/service/CrawlerPipeline.java
 package com.consultorprocessos.crawler.service;
 
 import com.consultorprocessos.court.entity.Court;

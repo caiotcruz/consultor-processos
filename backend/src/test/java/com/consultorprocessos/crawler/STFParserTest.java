@@ -1,4 +1,3 @@
-// src/test/java/com/consultorprocessos/crawler/STFParserTest.java
 package com.consultorprocessos.crawler;
 
 import com.consultorprocessos.crawler.exception.ParseException;
@@ -21,8 +20,6 @@ class STFParserTest {
 
     private final STFParser parser = new STFParser();
 
-    // ── Caminho feliz ────────────────────────────────────────────
-
     @Test
     @DisplayName("deve parsear fixture normal com 3 andamentos")
     void shouldParseNormalFixture() {
@@ -44,11 +41,10 @@ class STFParserTest {
     void shouldConcatenateDetalheWhenPresent() {
         ParsedData result = parser.parse(loadFixture("stf/v1.0.0_processo_normal.html"));
 
-        // Primeiro andamento: "Baixa ao arquivo do STF, Guia nº — Guia: 4418/2026..."
         String desc = result.movements().get(0).rawDescription();
         assertThat(desc).contains("Baixa ao arquivo do STF, Guia nº");
         assertThat(desc).contains("Guia: 4418/2026");
-        assertThat(desc).contains(" — "); // separador
+        assertThat(desc).contains(" — ");
     }
 
     @Test
@@ -56,7 +52,6 @@ class STFParserTest {
     void shouldUseOnlyNomeWhenDetalheIsEmpty() {
         ParsedData result = parser.parse(loadFixture("stf/v1.0.0_processo_normal.html"));
 
-        // Segundo andamento: "Transitado em julgado" — sem detalhe
         String desc = result.movements().get(1).rawDescription();
         assertThat(desc).isEqualTo("Transitado em julgado");
         assertThat(desc).doesNotContain(" — ");
@@ -67,13 +62,10 @@ class STFParserTest {
     void shouldPreserveDetalheText() {
         ParsedData result = parser.parse(loadFixture("stf/v1.0.0_processo_normal.html"));
 
-        // Terceiro andamento: "Acórdão publicado no DJe — DJe nº 275..."
         String desc = result.movements().get(2).rawDescription();
         assertThat(desc).contains("Acórdão publicado no DJe");
         assertThat(desc).contains("DJe nº 275");
     }
-
-    // ── Processo sem andamentos ──────────────────────────────────
 
     @Test
     @DisplayName("deve retornar lista vazia quando não há andamentos")
@@ -82,8 +74,6 @@ class STFParserTest {
 
         assertThat(result.movements()).isEmpty();
     }
-
-    // ── Erros de layout ──────────────────────────────────────────
 
     @Test
     @DisplayName("deve lançar ParseException quando div.processo-andamentos não existir")
@@ -119,16 +109,12 @@ class STFParserTest {
         assertThat(result.movements()).isEmpty();
     }
 
-    // ── Metadados ────────────────────────────────────────────────
-
     @Test
     @DisplayName("versão deve ser '1.0.0' e código 'STF'")
     void shouldHaveCorrectMetadata() {
         assertThat(parser.getVersion()).isEqualTo("1.0.0");
         assertThat(parser.getCourtCode()).isEqualTo("STF");
     }
-
-    // ── Helpers ──────────────────────────────────────────────────
 
     private RawResponse loadFixture(String path) {
         try {

@@ -104,9 +104,9 @@ management:
 
 app:
   scheduler:
-    enabled: false      
-    cron:    "0 */10 * * * *"
-    lock-ttl-seconds: 540
+    enabled: true      
+    cron:    "0 */1 * * * *"
+    lock-ttl-seconds: 50
 
   notifications:
     email:

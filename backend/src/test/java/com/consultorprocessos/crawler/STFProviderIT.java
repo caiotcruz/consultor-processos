@@ -1,4 +1,3 @@
-// src/test/java/com/consultorprocessos/crawler/STFProviderIT.java
 package com.consultorprocessos.crawler;
 
 import com.consultorprocessos.crawler.exception.CourtBlockedException;
@@ -19,9 +18,7 @@ class STFProviderIT extends BaseProviderIT {
     @Autowired
     private STFProvider stfProvider;
 
-    // CNJ normalizado → o provider converte para digits internamente
     private static final String PROCESS_NUMBER = "0001234-55.2020.8.26.0001";
-    // 0001234-55.2020.8.26.0001 sem separadores:
     private static final String PROCESS_DIGITS = "00012345520208260001";
 
     private static final String BUSCA_URL_PATTERN   = "/processos/listarProcessos.asp.*";
@@ -29,18 +26,14 @@ class STFProviderIT extends BaseProviderIT {
 
     @BeforeEach
     void disableDelays() {
-        // Zera delays para testes rápidos
         jdbcTemplate.update(
                 "UPDATE courts SET min_delay_ms=0, max_delay_ms=0, rate_limit_per_min=600 " +
                 "WHERE code='STF'");
     }
 
-    // ── Caminho feliz ────────────────────────────────────────────
-
     @Test
     @DisplayName("deve seguir redirect e retornar CrawlerSnapshot válido")
     void shouldFollowRedirectAndReturnSnapshot() {
-        // 1. listarProcessos → 302 → detalhe
         WIRE_MOCK.stubFor(get(urlPathMatching(BUSCA_URL_PATTERN))
                 .withQueryParam("numeroUnico", equalTo(PROCESS_DIGITS))
                 .willReturn(aResponse()
@@ -48,7 +41,6 @@ class STFProviderIT extends BaseProviderIT {
                         .withHeader("Location",
                                 WIRE_MOCK.baseUrl() + "/processos/detalhe.asp?incidente=12345")));
 
-        // 2. detalhe → HTML com andamentos
         WIRE_MOCK.stubFor(get(urlPathMatching(DETALHE_URL_PATTERN))
                 .withQueryParam("incidente", equalTo("12345"))
                 .willReturn(aResponse()
@@ -85,7 +77,6 @@ class STFProviderIT extends BaseProviderIT {
 
         stfProvider.consultar(PROCESS_NUMBER);
 
-        // Verifica que a requisição foi feita com o parâmetro correto (apenas dígitos)
         WIRE_MOCK.verify(getRequestedFor(urlPathMatching(BUSCA_URL_PATTERN))
                 .withQueryParam("numeroUnico", equalTo(PROCESS_DIGITS)));
     }
@@ -104,8 +95,6 @@ class STFProviderIT extends BaseProviderIT {
 
         assertThat(s1.contentHash()).isEqualTo(s2.contentHash());
     }
-
-    // ── Bloqueios ────────────────────────────────────────────────
 
     @Test
     @DisplayName("deve lançar CourtBlockedException para HTTP 403 na busca")
@@ -137,12 +126,9 @@ class STFProviderIT extends BaseProviderIT {
                 .hasMessageContaining("captcha");
     }
 
-    // ── Fallback ─────────────────────────────────────────────────
-
     @Test
     @DisplayName("deve usar Jsoup quando HTTP falha no primeiro redirect")
     void shouldFallbackToJsoupWhenHttpFails() {
-        // Primeira tentativa (HTTP) → 503
         System.out.println("prim");
         WIRE_MOCK.stubFor(get(urlPathMatching(BUSCA_URL_PATTERN))
                 .inScenario("http-fallback")
@@ -151,7 +137,6 @@ class STFProviderIT extends BaseProviderIT {
                 .willSetStateTo("retry"));
 
         System.out.println("sec");
-        // Segunda tentativa (Jsoup, mesma URL) → redirect + HTML
         WIRE_MOCK.stubFor(get(urlPathMatching(BUSCA_URL_PATTERN))
                 .inScenario("http-fallback")
                 .whenScenarioStateIs("retry")
@@ -173,8 +158,6 @@ class STFProviderIT extends BaseProviderIT {
         assertThat(snapshot.strategyUsed()).isEqualTo(CrawlerStrategy.JSOUP);
     }
 
-    // ── Indisponibilidade total ───────────────────────────────────
-
     @Test
     @DisplayName("deve lançar CourtUnavailableException quando todas as estratégias falham")
     void shouldThrowWhenAllStrategiesFail() {
@@ -185,8 +168,6 @@ class STFProviderIT extends BaseProviderIT {
                 .isInstanceOf(CourtUnavailableException.class)
                 .hasMessageContaining("STF");
     }
-
-    // ── Helper ───────────────────────────────────────────────────
 
     private void stubRedirectAndDetalhe() {
         WIRE_MOCK.stubFor(get(urlPathMatching(BUSCA_URL_PATTERN))

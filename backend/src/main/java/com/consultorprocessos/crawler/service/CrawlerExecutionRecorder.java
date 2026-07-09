@@ -35,7 +35,7 @@ public class CrawlerExecutionRecorder {
         exec.setHttpStatusCode(httpStatusCode);
         exec.setErrorType(errorType);
         exec.setErrorMessage(truncate(errorMessage, 500));
-        exec.setParserVersion(parserVersion); // pode ser null
+        exec.setParserVersion(parserVersion);
 
         CrawlerExecution saved = repository.save(exec);
 
