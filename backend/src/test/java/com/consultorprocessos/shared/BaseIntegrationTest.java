@@ -29,6 +29,7 @@ import com.consultorprocessos.crawler.model.CrawlerSnapshot;
 import com.consultorprocessos.crawler.model.CrawlerStrategy;
 import com.consultorprocessos.crawler.model.Movement;
 import com.consultorprocessos.crawler.model.RawResponseType;
+import com.consultorprocessos.notification.channel.email.LogEmailMovementChannel;
 import com.consultorprocessos.scheduler.model.CrawlRequestMessage;
 
 import java.time.Instant;
@@ -224,6 +225,13 @@ public abstract class BaseIntegrationTest {
         UUID courtId = jdbcTemplate.queryForObject(
                 "SELECT id FROM courts WHERE code = ?", UUID.class, courtCode);
         return new CrawlRequestMessage(processId, courtId, processNumber, courtCode, 0);
+    }
+
+    @Autowired
+    protected LogEmailMovementChannel logEmailMovementChannel;
+
+    protected void clearMovementEmails() {
+        logEmailMovementChannel.clear();
     }
 
     @BeforeEach

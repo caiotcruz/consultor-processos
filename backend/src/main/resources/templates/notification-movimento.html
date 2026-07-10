@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nova Movimentação Processual</title>
+  <style>
+    body { font-family: Arial, sans-serif; color: #333; background: #f4f4f4; margin: 0; padding: 0; }
+    .container { max-width: 600px; margin: 24px auto; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,.08); }
+    .header { background: #1a237e; color: #fff; padding: 24px; }
+    .header h1 { margin: 0; font-size: 20px; }
+    .body { padding: 24px; }
+    .process-number { font-size: 18px; font-weight: bold; color: #1a237e; margin-bottom: 4px; }
+    .court { color: #555; font-size: 14px; margin-bottom: 24px; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
+    th { background: #e8eaf6; text-align: left; padding: 10px 12px; font-size: 13px; color: #1a237e; }
+    td { padding: 10px 12px; font-size: 14px; border-bottom: 1px solid #eee; vertical-align: top; }
+    td:first-child { white-space: nowrap; width: 110px; color: #555; }
+    .footer { background: #f5f5f5; padding: 16px 24px; font-size: 12px; color: #888; border-top: 1px solid #e0e0e0; }
+    .unsubscribe { color: #aaa; text-decoration: none; }
+    .unsubscribe:hover { color: #666; }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <div class="header">
+      <h1>📋 Consultor de Processos</h1>
+    </div>
+
+    <div class="body">
+      <p>Olá, <span th:text="${userName}">Usuário</span>!</p>
+      <p>Nova(s) movimentação(ões) detectada(s) no processo que você acompanha:</p>
+
+      <div class="process-number" th:text="${processNumber}">0000000-00.0000.0.00.0000</div>
+      <div class="court" th:text="${courtName}">Tribunal</div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Descrição</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="mov : ${movimentos}">
+            <td th:text="${#temporals.format(mov.date, 'dd/MM/yyyy')}">01/01/2025</td>
+            <td th:text="${mov.description}">Descrição da movimentação.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p style="font-size: 13px; color: #666;">
+        Acesse o sistema para ver todos os detalhes do processo.
+      </p>
+    </div>
+
+    <div class="footer">
+      <p>
+        Você recebe este e-mail porque acompanha o processo
+        <strong th:text="${processNumber}">0000000-00.0000.0.00.0000</strong>
+        no Consultor de Processos.
+      </p>
+      <p>
+        <a class="unsubscribe" th:href="${unsubscribeUrl}">
+          Cancelar notificações por e-mail
+        </a>
+      </p>
+    </div>
+
+  </div>
+</body>
+</html>

@@ -24,6 +24,14 @@ spring:
     port:     ${RABBITMQ_PORT:5672}
     username: ${RABBITMQ_USER}
     password: ${RABBITMQ_PASSWORD}
+    
+  mail:
+    host:     ${SMTP_HOST}
+    port:     ${SMTP_PORT:587}
+    username: ${SMTP_USER}
+    password: ${SMTP_PASSWORD}
+
+
 
 logging:
   level:

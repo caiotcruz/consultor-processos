@@ -34,6 +34,12 @@ app:
     enabled: true   
     cron:    "0 */1 * * * *"
     lock-ttl-seconds: 50
+  
+  notifications:
+    email:
+      enabled: true
+    push:
+      enabled: true
 
   courts:
     real-requests-enabled: false

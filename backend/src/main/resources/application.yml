@@ -114,8 +114,8 @@ app:
       rate-limit-per-hour: 10
     push:
       enabled:             false
-    admin-email:           ${ADMIN_EMAIL:admin@consultorprocessos.com.br}
     unsubscribe-base-url:  ${APP_BASE_URL:http://localhost:4200}/unsubscribe
+    unsubscribe-secret:    ${UNSUBSCRIBE_SECRET:dev-secret-never-use-in-prod}
 
   courts:
     stf:
@@ -135,6 +135,10 @@ app:
     sender-address: ${EMAIL_SENDER_ADDRESS:noreply@consultorprocessos.com.br}
     sender-name:    ${EMAIL_SENDER_NAME:Consultor de Processos}
 
+
+firebase:
+  project-id:       ${FIREBASE_PROJECT_ID:}
+  credentials-json: ${FIREBASE_CREDENTIALS_JSON:}
 
 server:
   port: 8080
