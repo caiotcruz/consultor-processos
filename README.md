@@ -1,7 +1,7 @@
 # Consultor de Processos
 
 **Versão:** 0.8.0
-**Status:** Em planejamento
+**Status:** Em Implementaçao
 
 Sistema para monitoramento automático de processos judiciais em diferentes tribunais brasileiros.
 
