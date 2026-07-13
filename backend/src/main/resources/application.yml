@@ -108,10 +108,15 @@ app:
     cron:    "0 */1 * * * *"
     lock-ttl-seconds: 50
 
+  admin:
+    court-request-alert-threshold: 1 
+    health-score-alert-threshold:  50
+
   notifications:
     email:
       enabled:             false
       rate-limit-per-hour: 10
+    admin-email: ${ADMIN_EMAIL:admin@consultorprocessos.com.br}
     push:
       enabled:             false
     unsubscribe-base-url:  ${APP_BASE_URL:http://localhost:4200}/unsubscribe

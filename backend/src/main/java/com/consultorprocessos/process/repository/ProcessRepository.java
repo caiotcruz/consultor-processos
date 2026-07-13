@@ -1,6 +1,8 @@
 package com.consultorprocessos.process.repository;
 
 import com.consultorprocessos.process.entity.Process;
+import com.consultorprocessos.process.entity.ProcessStatus;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -9,6 +11,8 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.Collection;
+
 
 public interface ProcessRepository extends JpaRepository<Process, UUID> {
 
@@ -56,4 +60,6 @@ public interface ProcessRepository extends JpaRepository<Process, UUID> {
         LIMIT  :limit
         """)
     List<Process> findDueForChecking(@Param("limit") int limit);
+
+    long countByStatusIn(Collection<ProcessStatus> statuses);
 }

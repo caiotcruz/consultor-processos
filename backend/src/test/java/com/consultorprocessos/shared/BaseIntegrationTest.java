@@ -234,6 +234,20 @@ public abstract class BaseIntegrationTest {
         logEmailMovementChannel.clear();
     }
 
+    protected String registerAdminAndGetToken(String email, String password) throws Exception {
+        clearCapturedEmails();
+        String token = registerVerifyAndGetToken(email, password);
+
+        jdbcTemplate.update("""
+                INSERT INTO user_roles (user_id, role)
+                SELECT id, 'ROLE_ADMIN' FROM users WHERE email = ?
+                ON CONFLICT DO NOTHING
+                """, email);
+
+        clearCapturedEmails();
+        return login(email, password);
+    }
+
     @BeforeEach
     void cleanDatabase() {
         jdbcTemplate.execute("DELETE FROM notification_history");

@@ -1,5 +1,7 @@
 package com.consultorprocessos.crawler.consumer;
 
+import com.consultorprocessos.admin.entity.DlqMessage;
+import com.consultorprocessos.admin.repository.DlqMessageRepository;
 import com.consultorprocessos.court.entity.Court;
 import com.consultorprocessos.court.repository.CourtRepository;
 import com.consultorprocessos.crawler.entity.CrawlerExecution;
@@ -51,6 +53,7 @@ public class CrawlerMessageConsumer {
     private final ParserVersionRepository parserVersionRepository;
     private final ProcessService         processService;
     private final RabbitTemplate         rabbitTemplate;
+    private final DlqMessageRepository dlqMessageRepository;
 
     @RabbitListener(queues = RabbitConfig.QUEUE_CRAWL_REQUESTS)
     public void handle(@Payload CrawlRequestMessage message) {
@@ -173,15 +176,28 @@ public class CrawlerMessageConsumer {
             log.error("Consumer: falha ao marcar processo como ERROR. id={}", process.getId(), ex);
         }
 
-        rabbitTemplate.convertAndSend(
-                RabbitConfig.EXCHANGE_CRAWL_DLX,
-                "crawl.dead",
-                msg
-        );
+        rabbitTemplate.convertAndSend(RabbitConfig.EXCHANGE_CRAWL_DLX, "crawl.dead", msg);
 
-        log.error("Consumer: máximo de retries atingido ({}). processo={} tribunal={} erro={}. " +
-                  "Mensagem enviada para crawl.dlq.",
-                MAX_RETRIES, msg.processNumber(), msg.courtCode(), e.getMessage());
+        try {
+            DlqMessage dlqRecord = new DlqMessage();
+            dlqRecord.setProcessId(process.getId());
+            dlqRecord.setProcessNumber(msg.processNumber());
+            dlqRecord.setCourtCode(msg.courtCode());
+            dlqRecord.setRetryCount(msg.retryCount());
+            dlqRecord.setErrorMessage(truncate(e.getMessage(), 2000));
+            dlqMessageRepository.save(dlqRecord);
+        } catch (Exception ex) {
+            log.error("Consumer: falha ao persistir DlqMessage. processo={}", msg.processNumber(), ex);
+        }
+
+        log.error("Consumer: máximo de retries ({}) atingido. processo={} tribunal={}. " +
+                "Enviado para crawl.dlq.",
+                MAX_RETRIES, msg.processNumber(), msg.courtCode());
+    }
+
+    private String truncate(String value, int maxLength) {
+        if (value == null) return null;
+        return value.length() > maxLength ? value.substring(0, maxLength) : value;
     }
 
     private void recordExecution(Process process, CrawlRequestMessage msg,
