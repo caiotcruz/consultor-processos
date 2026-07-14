@@ -5,6 +5,7 @@
 **Status:** Em Implementaçao
 
 Sistema para monitoramento automático de processos judiciais em diferentes tribunais brasileiros.
+Inicialmente: TJRJ, EPROC e STF
 
 ## Objetivos
 
