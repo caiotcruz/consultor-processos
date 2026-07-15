@@ -1,0 +1,55 @@
+{
+  "$schema": "./node_modules/@angular/service-worker/config/schema.json",
+  "index":   "/index.html",
+
+  "assetGroups": [
+    {
+      "name":         "app-shell",
+      "installMode":  "prefetch",
+      "updateMode":   "prefetch",
+      "resources": {
+        "files": [
+          "/favicon.ico",
+          "/index.html",
+          "/manifest.webmanifest",
+          "/*.css",
+          "/*.js"
+        ]
+      }
+    },
+    {
+      "name":        "assets",
+      "installMode": "lazy",
+      "updateMode":  "prefetch",
+      "resources": {
+        "files": [
+          "/assets/**",
+          "/assets/icons/*.png"
+        ]
+      }
+    }
+  ],
+
+  "dataGroups": [
+    {
+      "name":     "courts-cache",
+      "urls":     ["/v1/courts"],
+      "cacheConfig": {
+        "strategy":  "freshness",
+        "maxSize":   10,
+        "maxAge":    "4h",
+        "timeout":   "5s"
+      }
+    },
+    {
+      "name":     "api-freshness",
+      "urls":     ["/v1/processes", "/v1/users/me"],
+      "cacheConfig": {
+        "strategy":  "freshness",
+        "maxSize":   50,
+        "maxAge":    "1m",
+        "timeout":   "3s"
+      }
+    }
+  ]
+}

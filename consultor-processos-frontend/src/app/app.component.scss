@@ -1,0 +1,36 @@
+ion-app {
+  font-family: 'Roboto', -apple-system, BlinkMacSystemFont,
+               'Segoe UI', sans-serif;
+}
+
+a {
+  text-decoration: none;
+  color: var(--ion-color-primary);
+}
+
+.page-content {
+  --padding-top:    16px;
+  --padding-bottom: 80px; 
+  --padding-start:  16px;
+  --padding-end:    16px;
+}
+
+.centered-loading {
+  display:         flex;
+  flex-direction:  column;
+  align-items:     center;
+  justify-content: center;
+  height:          100%;
+  min-height:      300px;
+  gap:             16px;
+  color:           var(--ion-color-medium);
+}
+
+.section-divider {
+  padding:    16px 16px 8px;
+  font-size:  12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color:      var(--ion-color-medium);
+}
