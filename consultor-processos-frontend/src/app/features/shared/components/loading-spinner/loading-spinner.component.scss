@@ -1,0 +1,43 @@
+$primary-blue: #2563eb;
+$text-muted: #64748b;
+$transition-smooth: all 0.25s ease-in-out;
+
+.smooth-spinner-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 16px;
+  gap: 14px;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.spinner-wrapper {
+  background: #f1f5f9;
+  padding: 12px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(226, 232, 240, 0.5);
+
+  ion-spinner {
+    width: 32px;
+    height: 32px;
+    --color: #{$primary-blue};
+  }
+}
+
+.spinner-message {
+  color: $text-muted;
+  font-size: 13.5px;
+  font-weight: 500;
+  margin: 0;
+  text-align: center;
+  letter-spacing: -0.1px;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}

@@ -1,0 +1,118 @@
+<ion-header class="ion-no-border smooth-header">
+  <ion-toolbar>
+    <ion-back-button defaultHref="/processes" slot="start" class="back-btn" text="">
+      <ion-icon name="chevron-back-outline"></ion-icon>
+    </ion-back-button>
+    <ion-title>{{ process()?.alias || 'Detalhes do Processo' }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="confirmDelete()" class="delete-header-btn">
+        <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="detail-page">
+  <app-loading-spinner *ngIf="isLoading()" message="Sincronizando dados..."></app-loading-spinner>
+
+  <div *ngIf="!isLoading() && process()" class="detail-container animate-fade">
+    
+    <div class="detail-card hero-card">
+      <div class="header-row">
+        <span class="process-number-label">Número Unificado</span>
+        <div class="active-dot" [class.paused]="!process()!.active"></div>
+      </div>
+      <h2 class="process-number">{{ process()!.processNumber }}</h2>
+      
+      <div class="court-info">
+        <div class="icon-circle">
+          <ion-icon name="business-outline"></ion-icon>
+        </div>
+        <div class="court-text">
+          <span class="court-label">Tribunal responsável</span>
+          <span class="court-value">{{ process()!.court.name }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-card info-card">
+      
+      <div class="info-row">
+        <div class="info-body">
+          <span class="row-label">Apelido de identificação</span>
+          <span class="row-value italic-placeholder" *ngIf="!process()!.alias">Sem apelido definido</span>
+          <span class="row-value" *ngIf="process()!.alias">{{ process()!.alias }}</span>
+        </div>
+        <button class="inline-edit-btn" (click)="editAlias()">
+          <ion-icon name="pencil-outline"></ion-icon>
+        </button>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="info-row no-action">
+        <div class="info-body">
+          <span class="row-label">Última varredura do robô</span>
+          <span class="row-value">
+            {{ process()!.lastCheckedAt ? (process()!.lastCheckedAt | date:'dd/MM/yyyy HH:mm') : 'Pendente de primeira varredura' }}
+          </span>
+        </div>
+        <div class="row-icon">
+          <ion-icon name="time-outline"></ion-icon>
+        </div>
+      </div>
+
+      <div class="divider" *ngIf="process()!.lastMovementAt"></div>
+
+      <div class="info-row no-action" *ngIf="process()!.lastMovementAt">
+        <div class="info-body">
+          <span class="row-label">Data do último andamento</span>
+          <span class="row-value">{{ process()!.lastMovementAt | date:'dd/MM/yyyy' }}</span>
+        </div>
+        <div class="row-icon">
+          <ion-icon name="calendar-outline"></ion-icon>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="detail-card movement-card" *ngIf="process()!.lastMovementDesc">
+      <div class="movement-header">
+        <span class="movement-badge">Último andamento detectado</span>
+      </div>
+      <p class="movement-text">
+        {{ process()!.lastMovementDesc }}
+      </p>
+    </div>
+
+    <div class="action-panel">
+      
+      <button 
+        [routerLink]="['/processes', subscriptionId, 'history']"
+        class="smooth-button primary-btn">
+        <ion-icon name="time-outline"></ion-icon>
+        Ver Histórico de Andamentos
+      </button>
+
+      <div class="secondary-actions">
+        <button 
+          *ngIf="!process()!.alias"
+          (click)="editAlias()" 
+          class="smooth-button outline-btn">
+          <ion-icon name="pencil-outline"></ion-icon>
+          Atribuir Apelido
+        </button>
+
+        <button 
+          (click)="toggleActive()" 
+          class="smooth-button outline-btn status-toggle-btn"
+          [class.warning-state]="process()!.active">
+          <ion-icon [name]="process()!.active ? 'pause-outline' : 'play-outline'"></ion-icon>
+          {{ process()!.active ? 'Pausar Atualizações' : 'Retomar Atualizações' }}
+        </button>
+      </div>
+
+    </div>
+
+  </div>
+</ion-content>

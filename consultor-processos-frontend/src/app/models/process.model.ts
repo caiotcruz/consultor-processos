@@ -45,3 +45,10 @@ export interface CreateProcessRequest {
   courtCode:     string;
   alias?:        string;
 }
+
+export interface PageMeta {
+  page: number;
+  pageSize: number;
+  totalElements: number;
+  totalPages: number;
+}

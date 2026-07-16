@@ -1,0 +1,50 @@
+<ion-content class="auth-page">
+  <div class="auth-wrapper">
+    <div class="auth-container">
+      <div class="verify-box">
+
+        <div *ngIf="status() === 'loading'" class="state-block animate-fade">
+          <div class="spinner-wrapper">
+            <ion-spinner name="crescent"></ion-spinner>
+          </div>
+          <h2>Verificando seu e-mail...</h2>
+          <p class="description">Estamos validando suas informações junto ao tribunal.</p>
+        </div>
+
+        <div *ngIf="status() === 'success'" class="state-block animate-fade">
+          <div class="status-icon-wrapper success">
+            <ion-icon name="checkmark-circle-outline" class="status-icon"></ion-icon>
+          </div>
+          <h2>E-mail verificado!</h2>
+          <p class="description">Sua conta foi ativada com sucesso. O monitoramento automático já está disponível.</p>
+          <button routerLink="/login" class="smooth-button full-width">
+            Ir para o Login
+          </button>
+        </div>
+
+        <div *ngIf="status() === 'error'" class="state-block animate-fade">
+          <div class="status-icon-wrapper error">
+            <ion-icon name="alert-circle-outline" class="status-icon"></ion-icon>
+          </div>
+          <h2>Link inválido ou expirado</h2>
+          <p class="description">Este link de verificação expirou, já foi utilizado ou é estruturalmente inválido.</p>
+          <button routerLink="/login" class="smooth-button full-width secondary-btn">
+            Voltar ao Login
+          </button>
+        </div>
+
+        <div *ngIf="status() === 'no-token'" class="state-block animate-fade">
+          <div class="status-icon-wrapper info">
+            <ion-icon name="mail-outline" class="status-icon"></ion-icon>
+          </div>
+          <h2>Verifique seu e-mail</h2>
+          <p class="description">Clique no link de ativação enviado para sua caixa de entrada para desbloquear seu painel.</p>
+          <button routerLink="/login" class="smooth-button full-width secondary-btn">
+            Ir para o Login
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</ion-content>

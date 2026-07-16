@@ -1,0 +1,61 @@
+<ion-header class="ion-no-border smooth-header">
+  <ion-toolbar>
+    <ion-back-button [defaultHref]="'/processes/' + subscriptionId" slot="start" class="back-btn" text="">
+      <ion-icon name="chevron-back-outline"></ion-icon>
+    </ion-back-button>
+    <ion-title>Histórico Processual</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="history-page">
+  <ion-refresher slot="fixed" (ionRefresh)="resetAndLoad($event)" class="smooth-refresher">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <div class="history-container">
+    <app-loading-spinner *ngIf="isLoading()"></app-loading-spinner>
+
+    <app-empty-state
+      *ngIf="!isLoading() && history().length === 0"
+      icon="time-outline"
+      title="Nenhum andamento"
+      message="As movimentações oficiais deste processo aparecerão organizadas aqui em uma linha do tempo assim que forem capturadas.">
+    </app-empty-state>
+
+    <div class="timeline" *ngIf="!isLoading() && history().length > 0">
+      
+      <div *ngFor="let h of history()" class="timeline-item animate-fade">
+        
+        <div class="timeline-marker">
+          <div class="marker-line"></div>
+          <div class="marker-dot"></div>
+        </div>
+
+        <div class="timeline-card">
+          <div class="card-header">
+            <div class="movement-date">
+              <ion-icon name="calendar-outline" class="date-icon"></ion-icon>
+              <span>{{ h.movementDate || (h.detectedAt | date:'dd/MM/yyyy') }}</span>
+            </div>
+          </div>
+
+          <div class="card-body">
+            <h3>{{ h.description }}</h3>
+          </div>
+
+          <div class="card-footer">
+            <ion-icon name="eye-outline" class="meta-icon"></ion-icon>
+            <span class="detected-date">Sincronizado em {{ h.detectedAt | date:'dd/MM/yyyy HH:mm' }}</span>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <ion-infinite-scroll [disabled]="!hasMore" (ionInfinite)="loadMore($event)" class="smooth-infinite">
+      <ion-infinite-scroll-content loadingText="Buscando mais andamentos...">
+      </ion-infinite-scroll-content>
+    </ion-infinite-scroll>
+  </div>
+</ion-content>

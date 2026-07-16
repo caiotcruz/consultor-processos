@@ -1,0 +1,18 @@
+<div class="smooth-empty-state animate-fade">
+  
+  <div class="icon-outer-circle">
+    <ion-icon [name]="icon" class="empty-icon"></ion-icon>
+  </div>
+
+  <h3 class="empty-title">{{ title }}</h3>
+  
+  <p class="empty-message" *ngIf="message">{{ message }}</p>
+  
+  <button
+    *ngIf="actionLabel && actionLink"
+    [routerLink]="actionLink"
+    class="smooth-button outline-btn">
+    {{ actionLabel }}
+  </button>
+  
+</div>

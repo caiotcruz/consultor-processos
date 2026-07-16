@@ -1,0 +1,78 @@
+<ion-content class="auth-page">
+  <div class="auth-wrapper">
+    <div class="auth-container">
+      
+      <div class="logo-section">
+        <div class="logo-icon">⚖️</div>
+        <h1>Consultor de Processos</h1>
+        <p>Monitoramento automático de processos judiciais</p>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="auth-form">
+
+        <div class="input-group" [class.has-error]="email?.invalid && email?.touched">
+          <ion-item lines="none" class="smooth-input">
+            <ion-icon name="mail" slot="start" class="input-icon"></ion-icon>
+            <ion-input
+              label="E-mail"
+              labelPlacement="floating"
+              type="email"
+              formControlName="email"
+              placeholder="seu@email.com"
+              autocomplete="email">
+            </ion-input>
+          </ion-item>
+          <div class="error-container" *ngIf="email?.invalid && email?.touched">
+            <ion-text color="danger">
+              <small>Por favor, insira um e-mail válido.</small>
+            </ion-text>
+          </div>
+        </div>
+
+        <div class="input-group" [class.has-error]="password?.invalid && password?.touched">
+          <ion-item lines="none" class="smooth-input">
+            <ion-icon name="lock-closed" slot="start" class="input-icon"></ion-icon>
+            <ion-input
+              label="Senha"
+              labelPlacement="floating"
+              [type]="showPassword ? 'text' : 'password'"
+              formControlName="password"
+              placeholder="••••••••"
+              autocomplete="current-password">
+            </ion-input>
+            <ion-icon
+              slot="end"
+              [name]="showPassword ? 'eye-off' : 'eye'"
+              (click)="showPassword = !showPassword"
+              class="toggle-password-icon">
+            </ion-icon>
+          </ion-item>
+          <div class="error-container" *ngIf="password?.invalid && password?.touched">
+            <ion-text color="danger">
+              <small>A senha é obrigatória.</small>
+            </ion-text>
+          </div>
+        </div>
+
+        <div class="banner-error" *ngIf="errorMessage">
+          <p>{{ errorMessage }}</p>
+        </div>
+
+        <button
+          type="submit"
+          [disabled]="form.invalid || isLoading"
+          class="smooth-button">
+          <ion-spinner *ngIf="isLoading" name="crescent"></ion-spinner>
+          <span *ngIf="!isLoading">Entrar na Conta</span>
+        </button>
+
+        <div class="auth-links">
+          <a routerLink="/forgot-password" class="link-item">Esqueceu a senha?</a>
+          <span class="divider">·</span>
+          <a routerLink="/register" class="link-item highlight">Criar conta</a>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</ion-content>

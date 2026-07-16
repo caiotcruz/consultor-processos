@@ -1,135 +1,79 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import {
   IonContent, IonHeader, IonToolbar, IonTitle, IonBackButton, IonButtons,
   IonItem, IonLabel, IonInput, IonSelect, IonSelectOption,
-  IonButton, IonText, IonSpinner, IonNote
+  IonButton, IonText, IonSpinner, IonNote, IonIcon
 } from '@ionic/angular/standalone';
+import { addIcons } from 'ionicons';
+import { documentTextOutline, businessOutline, bookmarkOutline, chevronBackOutline, alertCircleOutline, warningOutline } from 'ionicons/icons';
 import { ProcessService } from '../../../services/process.service';
-import { CourtService }   from '../../../services/court.service';
-import { ToastService }   from '../../../core/services/toast.service';
-import { CourtOption }    from '../../../models/process.model';
+import { CourtService } from '../../../services/court.service';
+import { ToastService } from '../../../core/services/toast.service';
+import { CourtOption } from '../../../models/process.model';
 
 @Component({
-  selector:    'app-add-process',
-  standalone:  true,
+  selector: 'app-add-process',
+  standalone: true,
   imports: [
-    CommonModule, ReactiveFormsModule,
-    IonContent, IonHeader, IonToolbar, IonTitle, IonBackButton, IonButtons,
-    IonItem, IonLabel, IonInput, IonSelect, IonSelectOption,
-    IonButton, IonText, IonSpinner, IonNote
+    CommonModule, ReactiveFormsModule, RouterLink,
+    IonContent, IonHeader, IonToolbar, IonTitle, IonBackButton,
+    IonItem, IonInput, IonSelect, IonSelectOption,
+    IonText, IonSpinner, IonIcon
   ],
-  template: `
-    <ion-header>
-      <ion-toolbar color="primary">
-        <ion-back-button defaultHref="/processes" slot="start"></ion-back-button>
-        <ion-title>Adicionar Processo</ion-title>
-      </ion-toolbar>
-    </ion-header>
-
-    <ion-content class="ion-padding">
-
-      <p style="color:#666; font-size:14px; margin-bottom: 24px;">
-        Informe o número CNJ do processo e selecione o tribunal.
-        Você será notificado automaticamente em cada nova movimentação.
-      </p>
-
-      <form [formGroup]="form" (ngSubmit)="onSubmit()">
-
-        <ion-item>
-          <ion-input
-            label="Número do Processo (CNJ)"
-            labelPlacement="stacked"
-            formControlName="processNumber"
-            placeholder="0000000-00.0000.0.00.0000"
-            type="text">
-          </ion-input>
-        </ion-item>
-        <ion-text *ngIf="processNumber?.invalid && processNumber?.touched" color="danger">
-          <small style="padding: 4px 16px; display:block">
-            Informe o número no formato CNJ (NNNNNNN-DD.AAAA.J.TT.OOOO).
-          </small>
-        </ion-text>
-
-        <ion-item class="ion-margin-top">
-          <ion-select
-            label="Tribunal"
-            labelPlacement="stacked"
-            formControlName="courtCode"
-            placeholder="Selecione o tribunal"
-            interface="action-sheet">
-            <ion-select-option *ngFor="let c of courts()" [value]="c.code">
-              {{ c.name }} ({{ c.code }})
-            </ion-select-option>
-          </ion-select>
-        </ion-item>
-        <ion-text *ngIf="courtCode?.invalid && courtCode?.touched" color="danger">
-          <small style="padding: 4px 16px; display:block">Selecione o tribunal.</small>
-        </ion-text>
-
-        <ion-item class="ion-margin-top">
-          <ion-input
-            label="Apelido (opcional)"
-            labelPlacement="stacked"
-            formControlName="alias"
-            placeholder="Ex: Ação trabalhista fulano">
-          </ion-input>
-        </ion-item>
-
-        <ion-text *ngIf="errorMessage" color="danger">
-          <p style="padding: 8px 16px;">{{ errorMessage }}</p>
-        </ion-text>
-        <ion-note *ngIf="courtUnavailableMessage" color="warning">
-          <p style="padding: 8px 16px;">{{ courtUnavailableMessage }}</p>
-        </ion-note>
-
-        <ion-button
-          expand="block" type="submit"
-          [disabled]="form.invalid || isLoading"
-          class="ion-margin-top ion-margin-bottom">
-          <ion-spinner *ngIf="isLoading" name="crescent"></ion-spinner>
-          <span *ngIf="!isLoading">Adicionar Processo</span>
-        </ion-button>
-      </form>
-    </ion-content>
-  `
+  templateUrl: './add-process.page.html',
+  styleUrls: ['./add-process.page.scss']
 })
 export class AddProcessPage implements OnInit {
 
   form = this.fb.group({
     processNumber: ['', [Validators.required, Validators.pattern(/\d{7}-\d{2}\.\d{4}\.\d\.\d{2}\.\d{4}/)]],
-    courtCode:     ['', Validators.required],
-    alias:         ['']
+    courtCode: ['', Validators.required],
+    alias: ['']
   });
 
-  courts       = signal<CourtOption[]>([]);
-  isLoading    = false;
+  courts = signal<CourtOption[]>([]);
+  isLoading = false;
   errorMessage = '';
   courtUnavailableMessage = '';
 
   get processNumber() { return this.form.get('processNumber'); }
-  get courtCode()     { return this.form.get('courtCode');     }
+  get courtCode() { return this.form.get('courtCode'); }
 
   constructor(
-    private fb:             FormBuilder,
+    private fb: FormBuilder,
     private processService: ProcessService,
-    private courtService:   CourtService,
-    private toast:          ToastService,
-    private router:         Router
-  ) {}
+    private courtService: CourtService,
+    private toast: ToastService,
+    private router: Router
+  ) {
+    addIcons({
+      documentTextOutline,
+      businessOutline,
+      bookmarkOutline,
+      chevronBackOutline,
+      alertCircleOutline,
+      warningOutline
+    });
+  }
 
   ngOnInit(): void {
-    this.courtService.listActive().subscribe(resp => {
-      this.courts.set(resp.data ?? []);
+    this.courtService.listActive().subscribe({
+      next: resp => {
+        this.courts.set(resp.data ?? []);
+      },
+      error: () => {
+        this.toast.error('Erro ao carregar tribunais ativos.');
+      }
     });
   }
 
   onSubmit(): void {
     if (this.form.invalid) return;
-    this.isLoading              = true;
-    this.errorMessage           = '';
+    this.isLoading = true;
+    this.errorMessage = '';
     this.courtUnavailableMessage = '';
 
     this.processService.create(this.form.value as any).subscribe({

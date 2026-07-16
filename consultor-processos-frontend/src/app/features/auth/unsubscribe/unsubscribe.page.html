@@ -1,0 +1,60 @@
+<ion-content class="auth-page">
+  <div class="auth-wrapper">
+    <div class="auth-container">
+      <div class="unsub-box">
+
+        <div *ngIf="status() === 'loading'" class="state-block animate-fade">
+          <div class="spinner-wrapper">
+            <ion-spinner name="crescent"></ion-spinner>
+          </div>
+          <h2>Processando descadastro...</h2>
+          <p class="description">Estamos removendo seu endereço da lista de disparos automáticos.</p>
+        </div>
+
+        <div *ngIf="status() === 'success'" class="state-block animate-fade">
+          <div class="status-icon-wrapper success">
+            <ion-icon name="checkmark-circle-outline" class="status-icon"></ion-icon>
+          </div>
+          <h2>Descadastro realizado!</h2>
+          <p class="description">Você não receberá mais notificações por e-mail do Consultor de Processos.</p>
+          
+          <p class="tip">💡 Você pode reativar os alertas e e-mails a qualquer momento nas configurações do seu perfil.</p>
+          
+          <button routerLink="/login" class="smooth-button full-width">
+            Ir para o App
+          </button>
+        </div>
+
+        <div *ngIf="status() === 'error'" class="state-block animate-fade">
+          <div class="status-icon-wrapper error">
+            <ion-icon name="alert-circle-outline" class="status-icon"></ion-icon>
+          </div>
+          <h2>Link inválido ou expirado</h2>
+          <p class="description">
+            Este link de descadastro já foi utilizado ou é estruturalmente inválido.
+          </p>
+          
+          <p class="tip">Se você ainda estiver recebendo alertas, gerencie suas preferências dentro do sistema.</p>
+
+          <button routerLink="/login" class="smooth-button full-width secondary-btn">
+            Acessar o Painel
+          </button>
+        </div>
+
+        <div *ngIf="status() === 'no-params'" class="state-block animate-fade">
+          <div class="status-icon-wrapper info">
+            <ion-icon name="mail-outline" class="status-icon"></ion-icon>
+          </div>
+          <h2>Acesso restrito</h2>
+          <p class="description">
+            Esta página serve para remover inscrições e deve ser acessada através do link presente no rodapé dos e-mails que enviamos.
+          </p>
+          <button routerLink="/login" class="smooth-button full-width secondary-btn">
+            Ir para a Home
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</ion-content>

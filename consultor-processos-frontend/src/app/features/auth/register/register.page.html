@@ -1,0 +1,106 @@
+<ion-content class="auth-page">
+  <div class="auth-wrapper">
+    <div class="auth-container">
+      
+      <div *ngIf="!registered; else successBlock" class="animate-fade">
+        <div class="title-section">
+          <h1>Criar Conta</h1>
+          <p class="subtitle">Monitore seus processos judiciais de forma automática</p>
+        </div>
+
+        <form [formGroup]="form" (ngSubmit)="onSubmit()" class="auth-form">
+
+          <div class="input-group" [class.has-error]="name?.invalid && name?.touched">
+            <ion-item lines="none" class="smooth-input">
+              <ion-icon name="person-outline" slot="start" class="input-icon"></ion-icon>
+              <ion-input 
+                label="Nome completo" 
+                labelPlacement="floating"
+                type="text"
+                formControlName="name" 
+                placeholder="Seu nome">
+              </ion-input>
+            </ion-item>
+            <div class="error-container" *ngIf="name?.invalid && name?.touched">
+              <ion-text color="danger">
+                <small>O nome deve ter entre 2 e 150 caracteres.</small>
+              </ion-text>
+            </div>
+          </div>
+
+          <div class="input-group" [class.has-error]="email?.invalid && email?.touched">
+            <ion-item lines="none" class="smooth-input">
+              <ion-icon name="mail-outline" slot="start" class="input-icon"></ion-icon>
+              <ion-input 
+                label="E-mail" 
+                labelPlacement="floating"
+                type="email"
+                formControlName="email" 
+                placeholder="seu@email.com">
+              </ion-input>
+            </ion-item>
+            <div class="error-container" *ngIf="email?.invalid && email?.touched">
+              <ion-text color="danger">
+                <small>Insira um e-mail válido.</small>
+              </ion-text>
+            </div>
+          </div>
+
+          <div class="input-group" [class.has-error]="password?.invalid && password?.touched">
+            <ion-item lines="none" class="smooth-input">
+              <ion-icon name="lock-closed-outline" slot="start" class="input-icon"></ion-icon>
+              <ion-input 
+                label="Senha" 
+                labelPlacement="floating"
+                type="password"
+                formControlName="password" 
+                placeholder="Mínimo 8 caracteres com 1 número">
+              </ion-input>
+            </ion-item>
+            <div class="error-container" *ngIf="password?.invalid && password?.touched || (password?.invalid && password?.touched)">
+              <ion-text color="danger">
+                <small>A senha deve ter no mínimo 8 caracteres e conter pelo menos 1 número.</small>
+              </ion-text>
+            </div>
+          </div>
+
+          <div class="banner-error" *ngIf="errorMessage">
+            <p>{{ errorMessage }}</p>
+          </div>
+
+          <button 
+            type="submit"
+            [disabled]="form.invalid || isLoading" 
+            class="smooth-button">
+            <ion-spinner *ngIf="isLoading" name="crescent"></ion-spinner>
+            <span *ngIf="!isLoading">Criar conta grátis</span>
+          </button>
+
+          <div class="auth-links">
+            <span class="text-muted">Já tem uma conta?</span>
+            <a routerLink="/login" class="link-item highlight">Fazer login</a>
+          </div>
+
+        </form>
+      </div>
+
+      <ng-template #successBlock>
+        <div class="success-state animate-fade">
+          <div class="success-icon-wrapper">
+            <ion-icon name="mail-open-outline" class="success-icon"></ion-icon>
+          </div>
+          <h2>Verifique seu e-mail</h2>
+          <p class="success-text">
+            Enviamos um link de ativação essencial para <span class="highlight-email">{{ registeredEmail }}</span>.
+          </p>
+          <p class="tip">💡 Dica: Verifique a caixa de spam ou lixo eletrônico se não receber em instantes.</p>
+          
+          <button routerLink="/login" class="smooth-button full-width">
+            Ir para o Login
+          </button>
+        </div>
+      </ng-template>
+
+    </div>
+  </div>
+</ion-content>

@@ -1,0 +1,102 @@
+<ion-header class="ion-no-border smooth-header">
+  <ion-toolbar>
+    <ion-back-button defaultHref="/processes" slot="start" class="back-btn" text="">
+      <ion-icon name="chevron-back-outline"></ion-icon>
+    </ion-back-button>
+    <ion-title>Adicionar Processo</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="add-process-page">
+  <div class="page-wrapper">
+    <div class="form-container animate-fade">
+
+      <div class="title-section">
+        <p class="instruction">
+          Informe o número CNJ unificado do processo e selecione o tribunal correspondente para iniciar o monitoramento automático.
+        </p>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="smooth-form">
+
+        <div class="input-group" [class.has-error]="processNumber?.invalid && processNumber?.touched">
+          <ion-item lines="none" class="smooth-input">
+            <ion-icon name="document-text-outline" slot="start" class="input-icon"></ion-icon>
+            <ion-input
+              label="Número do Processo (CNJ)"
+              labelPlacement="floating"
+              formControlName="processNumber"
+              placeholder="0000000-00.0000.0.00.0000"
+              type="text">
+            </ion-input>
+          </ion-item>
+          <div class="error-container" *ngIf="processNumber?.invalid && processNumber?.touched">
+            <ion-text color="danger">
+              <small>Formato exigido: NNNNNNN-DD.AAAA.J.TT.OOOO</small>
+            </ion-text>
+          </div>
+        </div>
+
+        <div class="input-group" [class.has-error]="courtCode?.invalid && courtCode?.touched">
+          <ion-item lines="none" class="smooth-input">
+            <ion-icon name="business-outline" slot="start" class="input-icon"></ion-icon>
+            <ion-select
+              label="Tribunal de Origem"
+              labelPlacement="floating"
+              formControlName="courtCode"
+              placeholder="Selecione o tribunal"
+              interface="action-sheet"
+              class="smooth-select">
+              <ion-select-option *ngFor="let c of courts()" [value]="c.code">
+                {{ c.name }} ({{ c.code }})
+              </ion-select-option>
+            </ion-select>
+          </ion-item>
+          <div class="error-container" *ngIf="courtCode?.invalid && courtCode?.touched">
+            <ion-text color="danger">
+              <small>A seleção do tribunal é obrigatória.</small>
+            </ion-text>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <ion-item lines="none" class="smooth-input">
+            <ion-icon name="bookmark-outline" slot="start" class="input-icon"></ion-icon>
+            <ion-input
+              label="Apelido do Processo (Opcional)"
+              labelPlacement="floating"
+              formControlName="alias"
+              placeholder="Ex: Ação contra Empresa X"
+              type="text">
+            </ion-input>
+          </ion-item>
+        </div>
+
+        <div class="banner-error animate-fade" *ngIf="errorMessage">
+          <ion-icon name="alert-circle-outline" class="banner-icon"></ion-icon>
+          <p>{{ errorMessage }}</p>
+        </div>
+
+        <div class="banner-warning animate-fade" *ngIf="courtUnavailableMessage">
+          <ion-icon name="warning-outline" class="banner-icon"></ion-icon>
+          <p>{{ courtUnavailableMessage }}</p>
+        </div>
+
+        <div class="action-buttons">
+          <button
+            type="submit"
+            [disabled]="form.invalid || isLoading"
+            class="smooth-button primary-btn">
+            <ion-spinner *ngIf="isLoading" name="crescent"></ion-spinner>
+            <span *ngIf="!isLoading">Adicionar ao Monitoramento</span>
+          </button>
+
+          <button type="button" routerLink="/processes" class="smooth-button clear-btn">
+            Cancelar e Voltar
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</ion-content>

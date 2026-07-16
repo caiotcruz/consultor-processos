@@ -1,0 +1,149 @@
+<ion-header class="ion-no-border smooth-header">
+  <ion-toolbar>
+    <ion-title>Meu Perfil</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="profile-page">
+  <app-loading-spinner *ngIf="isLoading()"></app-loading-spinner>
+
+  <div *ngIf="!isLoading() && profile()" class="profile-container animate-fade">
+    
+    <div class="profile-card hero-card">
+      <div class="avatar-wrapper">
+        <div class="avatar">{{ initials() }}</div>
+        <div class="plan-badge" [attr.data-plan]="profile()!.plan.name">
+          {{ profile()!.plan.displayName }}
+        </div>
+      </div>
+      <h2>{{ profile()!.name }}</h2>
+      <p class="email-text">{{ profile()!.email }}</p>
+    </div>
+
+    <div class="section-wrapper">
+      <span class="section-title">Informações Pessoais</span>
+      <div class="profile-card">
+        <form [formGroup]="nameForm" (ngSubmit)="saveName()" class="inline-form">
+          <ion-item lines="none" class="smooth-item input-item">
+            <ion-icon name="person-outline" slot="start" class="item-icon"></ion-icon>
+            <ion-input 
+              label="Nome" 
+              labelPlacement="floating" 
+              formControlName="name" 
+              type="text">
+            </ion-input>
+            <button 
+              slot="end" 
+              type="submit" 
+              [disabled]="nameForm.invalid || isSavingName"
+              class="inline-save-btn">
+              Salvar
+            </button>
+          </ion-item>
+        </form>
+      </div>
+    </div>
+
+    <div class="section-wrapper">
+      <span class="section-title">Uso do Plano</span>
+      <div class="profile-card grid-card">
+        <div class="grid-item">
+          <div class="grid-icon-wrapper">
+            <ion-icon name="shield-checkmark-outline"></ion-icon>
+          </div>
+          <div class="grid-text">
+            <span class="grid-label">Processos monitorados</span>
+            <span class="grid-value">
+              {{ profile()!.usage.activeProcesses }}
+              <span class="limit-divider" *ngIf="profile()!.usage.remainingProcesses != null">
+                / {{ profile()!.plan.maxProcesses }}
+              </span>
+            </span>
+          </div>
+        </div>
+
+        <div class="grid-item">
+          <div class="grid-icon-wrapper">
+            <ion-icon name="speedometer-outline"></ion-icon>
+          </div>
+          <div class="grid-text">
+            <span class="grid-label">Atualização</span>
+            <span class="grid-value">A cada {{ profile()!.plan.checkIntervalHours }}h</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-wrapper">
+      <span class="section-title">Notificações</span>
+      <div class="profile-card list-card">
+        <ion-item lines="none" class="smooth-item toggle-item">
+          <ion-icon name="mail-outline" slot="start" class="item-icon"></ion-icon>
+          <ion-label>
+            <h3>Notificações por E-mail</h3>
+            <p>Receber atualizações na caixa de entrada</p>
+          </ion-label>
+          <ion-toggle
+            [checked]="profile()!.notifications.emailEnabled"
+            (ionChange)="updateNotifPref('emailEnabled', $event.detail.checked)">
+          </ion-toggle>
+        </ion-item>
+
+        <div class="list-divider"></div>
+
+        <ion-item lines="none" class="smooth-item toggle-item">
+          <ion-icon name="notifications-outline" slot="start" class="item-icon"></ion-icon>
+          <ion-label>
+            <h3>Notificações Push</h3>
+            <p>Alertas em tempo real no dispositivo</p>
+          </ion-label>
+          <ion-toggle
+            [checked]="profile()!.notifications.pushEnabled"
+            (ionChange)="updateNotifPref('pushEnabled', $event.detail.checked)">
+          </ion-toggle>
+        </ion-item>
+      </div>
+    </div>
+
+    <div class="section-wrapper">
+      <span class="section-title">Conta</span>
+      <div class="profile-card list-card">
+        <ion-item button lines="none" routerLink="/profile/change-password" class="smooth-item action-item">
+          <ion-icon name="key-outline" slot="start" class="item-icon"></ion-icon>
+          <ion-label>Alterar Senha</ion-label>
+          <ion-icon name="chevron-forward-outline" slot="end" class="arrow-icon"></ion-icon>
+        </ion-item>
+
+        <div class="list-divider"></div>
+
+        <ion-item button lines="none" routerLink="/profile/notifications" class="smooth-item action-item">
+          <ion-icon name="notifications-outline" slot="start" class="item-icon"></ion-icon>
+          <ion-label>Histórico de Notificações</ion-label>
+          <ion-icon name="chevron-forward-outline" slot="end" class="arrow-icon"></ion-icon>
+        </ion-item>
+
+        <div class="list-divider"></div>
+
+        <ion-item button lines="none" (click)="logout()" class="smooth-item action-item logout-item">
+          <ion-icon name="log-out-outline" slot="start" class="item-icon"></ion-icon>
+          <ion-label>Sair do Aplicativo</ion-label>
+        </ion-item>
+      </div>
+    </div>
+
+    <div class="section-wrapper danger-zone">
+      <span class="section-title">Exclusão</span>
+      <div class="profile-card danger-card">
+        <div class="danger-info">
+          <h3>Excluir conta permanentemente</h3>
+          <p>Todos os seus processos monitorados e históricos de notificações serão apagados sem possibilidade de recuperação.</p>
+        </div>
+        <button class="danger-button" (click)="confirmDeleteAccount()">
+          <ion-icon name="trash-outline"></ion-icon>
+          Excluir Conta
+        </button>
+      </div>
+    </div>
+
+  </div>
+</ion-content>

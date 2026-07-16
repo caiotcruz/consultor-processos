@@ -27,6 +27,8 @@ yarn-error.log*
 consultor-processos-frontend/src/environments/environment.prod.ts
 consultor-processos-frontend/www
 
+Manual-Operacional.md
+
 backend/target/
 target/
 

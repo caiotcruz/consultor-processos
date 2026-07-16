@@ -1,0 +1,94 @@
+<ion-header class="ion-no-border smooth-header">
+  <ion-toolbar>
+    <ion-title>Meus Processos</ion-title>
+    <ion-buttons slot="end">
+      <ion-button routerLink="/profile" class="profile-btn">
+        <ion-icon name="person-circle-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="process-page">
+  <ion-refresher slot="fixed" (ionRefresh)="load($event)" class="smooth-refresher">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <div class="page-container">
+    
+    <div class="filter-wrapper">
+      <ion-segment [(ngModel)]="activeFilter" (ionChange)="onFilterChange()" mode="ios" class="smooth-segment">
+        <ion-segment-button value="all">
+          <ion-label>Todos</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="true">
+          <ion-label>Ativos</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="false">
+          <ion-label>Inativos</ion-label>
+        </ion-segment-button>
+      </ion-segment>
+    </div>
+
+    <div class="skeleton-list" *ngIf="isLoading()">
+      <div class="skeleton-card" *ngFor="let i of [1,2,3,4]">
+        <div class="skeleton-body">
+          <ion-skeleton-text [animated]="true" style="width: 50%; height: 18px; border-radius: 4px;"></ion-skeleton-text>
+          <ion-skeleton-text [animated]="true" style="width: 30%; height: 12px; margin-top: 8px; border-radius: 4px;"></ion-skeleton-text>
+          <ion-skeleton-text [animated]="true" style="width: 80%; height: 12px; margin-top: 8px; border-radius: 4px;"></ion-skeleton-text>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="!isLoading() && processes().length === 0" class="empty-state animate-fade">
+      <div class="empty-icon-wrapper">
+        <ion-icon name="document-text-outline"></ion-icon>
+      </div>
+      <h3>Nenhum processo ainda</h3>
+      <p>Cadastre os números dos processos e nós passaremos a buscar todas as novas movimentações de forma automática.</p>
+      
+      <button routerLink="/processes/add" class="smooth-button outline-btn">
+        Adicionar Primeiro Processo
+      </button>
+    </div>
+
+    <div class="process-grid" *ngIf="!isLoading() && processes().length > 0">
+      
+      <div 
+        *ngFor="let p of processes()" 
+        [routerLink]="['/processes', p.subscriptionId]"
+        class="process-card animate-fade">
+        
+        <div class="card-header">
+          <div class="title-area">
+            <h2>{{ p.alias || p.processNumber }}</h2>
+            <span class="court-badge">{{ p.court.name }}</span>
+          </div>
+          <div class="status-badge" [attr.data-status]="p.status">
+            {{ statusLabel(p.status) }}
+          </div>
+        </div>
+
+        <div class="card-body" *ngIf="p.lastMovementDesc">
+          <p class="movement-desc">
+            {{ p.lastMovementDesc | slice:0:80 }}{{ p.lastMovementDesc.length > 80 ? '...' : '' }}
+          </p>
+        </div>
+
+        <div class="card-footer">
+          <span class="view-detail-txt">Visualizar andamento</span>
+          <ion-icon name="chevron-forward-outline" class="footer-arrow"></ion-icon>
+        </div>
+
+      </div>
+
+    </div>
+
+    <ion-fab slot="fixed" vertical="bottom" horizontal="end" class="smooth-fab">
+      <ion-fab-button routerLink="/processes/add" class="fab-btn">
+        <ion-icon name="add"></ion-icon>
+      </ion-fab-button>
+    </ion-fab>
+
+  </div>
+</ion-content>

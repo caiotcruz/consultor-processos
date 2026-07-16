@@ -16,7 +16,7 @@ export class ProcessService {
   constructor(private http: HttpClient) {}
 
   list(params?: { active?: boolean; status?: string; page?: number; size?: number }):
-      Observable<ApiResponse<{ content: ProcessSummary[] }>> {
+     Observable<ApiResponse<ProcessSummary[]>> {
     let httpParams = new HttpParams();
     if (params?.active  != null)   httpParams = httpParams.set('active', String(params.active));
     if (params?.status)            httpParams = httpParams.set('status', params.status);
@@ -56,13 +56,15 @@ export class ProcessService {
     return this.http.delete<ApiResponse<{ message: string }>>(`${this.url}/${subscriptionId}`);
   }
 
-  getHistory(subscriptionId: string, page = 0, size = 20):
-      Observable<ApiResponse<{ content: ProcessHistoryEntry[] }>> {
+  getHistory( subscriptionId: string, page = 0, size = 20): 
+  Observable<ApiResponse<ProcessHistoryEntry[]>> {
     const params = new HttpParams()
       .set('page', String(page))
       .set('size', String(size));
-    return this.http.get<ApiResponse<any>>(
-      `${this.url}/${subscriptionId}/history`, { params }
+
+    return this.http.get<ApiResponse<ProcessHistoryEntry[]>>(
+      `${this.url}/${subscriptionId}/history`,
+      { params }
     );
   }
 }
