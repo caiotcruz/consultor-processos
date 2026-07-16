@@ -84,11 +84,13 @@
 
     </div>
 
-    <ion-fab slot="fixed" vertical="bottom" horizontal="end" class="smooth-fab">
-      <ion-fab-button routerLink="/processes/add" class="fab-btn">
-        <ion-icon name="add"></ion-icon>
-      </ion-fab-button>
-    </ion-fab>
-
   </div>
+
+  <ion-fab slot="fixed" vertical="bottom" horizontal="end" class="smooth-fab">
+    <button routerLink="/processes/add" class="extended-fab-btn">
+      <ion-icon name="add" class="fab-icon"></ion-icon>
+      <span class="fab-text">Adicionar Processo</span>
+    </button>
+  </ion-fab>
+
 </ion-content>
