@@ -3,7 +3,7 @@ import { CommonModule }      from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { RouterLink }        from '@angular/router';
 import {
-  IonContent, IonHeader, IonToolbar, IonTitle, IonBackButton, IonButtons,
+  IonContent, IonHeader, IonToolbar, IonTitle, IonBackButton,
   IonItem, IonInput, IonButton, IonText, IonSpinner, IonIcon
 } from '@ionic/angular/standalone';
 import { addIcons }          from 'ionicons';
@@ -15,7 +15,7 @@ import { AuthService }       from '../../../core/services/auth.service';
   standalone: true,
   imports: [
     CommonModule, ReactiveFormsModule, RouterLink,
-    IonContent, IonHeader, IonToolbar, IonTitle, IonBackButton, IonButtons,
+    IonContent, IonHeader, IonToolbar, IonTitle, IonBackButton,
     IonItem, IonInput, IonButton, IonText, IonSpinner, IonIcon
   ],
   template: `

@@ -17,7 +17,7 @@ import { ToastService } from '../../../core/services/toast.service';
   standalone: true,
   imports: [
     CommonModule, ReactiveFormsModule, RouterLink,
-    IonContent, IonItem, IonLabel, IonInput, IonButton, IonText, IonSpinner, IonIcon
+    IonContent, IonItem, IonInput, IonButton, IonText, IonSpinner, IonIcon
   ],
   template: `
     <ion-content class="ion-padding auth-page">
