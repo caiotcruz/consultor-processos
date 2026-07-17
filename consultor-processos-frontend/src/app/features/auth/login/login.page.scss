@@ -9,7 +9,7 @@ $danger-light: #fef2f2;
 $danger-text: #991b1b;
 $radius-lg: 20px;
 $radius-md: 14px;
-$transition-smooth: all 0.25s ease-in-out;
+$transition-smooth: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 $shadow-soft: 0 10px 25px -3px rgba(15, 23, 42, 0.04), 0 4px 12px -2px rgba(15, 23, 42, 0.02);
 
 .auth-page {
@@ -36,17 +36,31 @@ $shadow-soft: 0 10px 25px -3px rgba(15, 23, 42, 0.04), 0 4px 12px -2px rgba(15, 
 }
 
 .logo-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   text-align: center;
   margin-bottom: 36px;
 
-  .logo-icon {
-    font-size: 32px;
-    margin-bottom: 12px;
+  .logo-icon-box {
+    background: #f1f5f9;
+    color: $primary;
+    padding: 14px;
+    border-radius: 50%;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(226, 232, 240, 0.6);
+
+    .app-logo {
+      font-size: 32px;
+    }
   }
 
   h1 {
     font-size: 24px;
-    font-weight: 700;
+    font-weight: 800;
     color: $primary;
     margin: 0;
     letter-spacing: -0.5px;
@@ -72,24 +86,27 @@ $shadow-soft: 0 10px 25px -3px rgba(15, 23, 42, 0.04), 0 4px 12px -2px rgba(15, 
   gap: 6px;
 }
 
-.smooth-input {
-  --background: #{$bg-input};
-  --border-radius: #{$radius-md};
-  --padding-start: 16px;
-  --padding-end: 16px;
-  --inner-padding-end: 0;
+.smooth-input-wrapper {
+  display: flex;
+  align-items: center;
+  background: $bg-input;
+  border-radius: $radius-md;
+  padding: 4px 16px;
   min-height: 64px;
+  border: 1px solid transparent;
   transition: $transition-smooth;
 
   &:focus-within {
-    --background: #{$bg-input-focus};
-    box-shadow: 0 0 0 2px rgba(30, 41, 59, 0.1);
+    background: $bg-input-focus;
+    border-color: rgba(30, 41, 59, 0.15);
+    box-shadow: 0 0 0 3px rgba(30, 41, 59, 0.05);
   }
 
   .input-icon {
     color: $text-muted;
     font-size: 20px;
     margin-right: 12px;
+    flex-shrink: 0;
   }
 
   .toggle-password-icon {
@@ -97,28 +114,51 @@ $shadow-soft: 0 10px 25px -3px rgba(15, 23, 42, 0.04), 0 4px 12px -2px rgba(15, 
     font-size: 20px;
     cursor: pointer;
     padding: 8px;
+    flex-shrink: 0;
+    transition: $transition-smooth;
     
     &:hover {
       color: $primary;
     }
   }
 
-  ion-input {
-    --padding-top: 10px;
-    --padding-bottom: 10px;
+  .smooth-input-field {
+    --background: transparent !important;
+    --border-color: transparent !important;
+    --box-shadow: none !important;
+    --padding-top: 22px;
+    --padding-bottom: 4px;
     font-size: 15px;
-    font-weight: 500;
+    font-weight: 600;
     color: $primary;
+    width: 100%;
+
+    input {
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+      outline: none !important;
+    }
+  }
+}
+
+.has-error .smooth-input-wrapper {
+  background: #fdf2f2;
+  border-color: rgba(239, 68, 68, 0.3);
+  
+  .input-icon {
+    color: #b91c1c;
   }
 }
 
 .error-container {
-  padding-left: 8px;
+  padding-left: 4px;
   animation: fadeIn 0.2s ease-in-out;
   
   small {
     font-size: 12px;
-    font-weight: 500;
+    font-weight: 600;
+    color: #b91c1c;
   }
 }
 
@@ -132,7 +172,7 @@ $shadow-soft: 0 10px 25px -3px rgba(15, 23, 42, 0.04), 0 4px 12px -2px rgba(15, 
   p {
     color: $danger-text;
     font-size: 13px;
-    font-weight: 500;
+    font-weight: 600;
     margin: 0;
     line-height: 1.4;
   }
@@ -144,8 +184,8 @@ $shadow-soft: 0 10px 25px -3px rgba(15, 23, 42, 0.04), 0 4px 12px -2px rgba(15, 
   border: none;
   border-radius: $radius-md;
   min-height: 52px;
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 15.5px;
+  font-weight: 700;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -184,7 +224,7 @@ $shadow-soft: 0 10px 25px -3px rgba(15, 23, 42, 0.04), 0 4px 12px -2px rgba(15, 
   justify-content: center;
   gap: 8px;
   margin-top: 8px;
-  font-size: 14px;
+  font-size: 13.5px;
 
   .divider {
     color: #cbd5e1;
@@ -194,7 +234,7 @@ $shadow-soft: 0 10px 25px -3px rgba(15, 23, 42, 0.04), 0 4px 12px -2px rgba(15, 
   .link-item {
     color: $text-muted;
     text-decoration: none;
-    font-weight: 500;
+    font-weight: 600;
     transition: $transition-smooth;
 
     &:hover {
@@ -203,7 +243,7 @@ $shadow-soft: 0 10px 25px -3px rgba(15, 23, 42, 0.04), 0 4px 12px -2px rgba(15, 
 
     &.highlight {
       color: #2563eb;
-      font-weight: 600;
+      font-weight: 700;
 
       &:hover {
         color: #1d4ed8;

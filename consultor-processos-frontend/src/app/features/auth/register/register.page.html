@@ -11,16 +11,17 @@
         <form [formGroup]="form" (ngSubmit)="onSubmit()" class="auth-form">
 
           <div class="input-group" [class.has-error]="name?.invalid && name?.touched">
-            <ion-item lines="none" class="smooth-input">
-              <ion-icon name="person-outline" slot="start" class="input-icon"></ion-icon>
+            <div class="smooth-input-wrapper">
+              <ion-icon name="person-outline" class="input-icon"></ion-icon>
               <ion-input 
                 label="Nome completo" 
                 labelPlacement="floating"
                 type="text"
                 formControlName="name" 
-                placeholder="Seu nome">
+                placeholder="Seu nome"
+                class="smooth-input-field">
               </ion-input>
-            </ion-item>
+            </div>
             <div class="error-container" *ngIf="name?.invalid && name?.touched">
               <ion-text color="danger">
                 <small>O nome deve ter entre 2 e 150 caracteres.</small>
@@ -29,16 +30,17 @@
           </div>
 
           <div class="input-group" [class.has-error]="email?.invalid && email?.touched">
-            <ion-item lines="none" class="smooth-input">
-              <ion-icon name="mail-outline" slot="start" class="input-icon"></ion-icon>
+            <div class="smooth-input-wrapper">
+              <ion-icon name="mail-outline" class="input-icon"></ion-icon>
               <ion-input 
                 label="E-mail" 
                 labelPlacement="floating"
                 type="email"
                 formControlName="email" 
-                placeholder="seu@email.com">
+                placeholder="seu@email.com"
+                class="smooth-input-field">
               </ion-input>
-            </ion-item>
+            </div>
             <div class="error-container" *ngIf="email?.invalid && email?.touched">
               <ion-text color="danger">
                 <small>Insira um e-mail válido.</small>
@@ -47,17 +49,18 @@
           </div>
 
           <div class="input-group" [class.has-error]="password?.invalid && password?.touched">
-            <ion-item lines="none" class="smooth-input">
-              <ion-icon name="lock-closed-outline" slot="start" class="input-icon"></ion-icon>
+            <div class="smooth-input-wrapper">
+              <ion-icon name="lock-closed-outline" class="input-icon"></ion-icon>
               <ion-input 
                 label="Senha" 
                 labelPlacement="floating"
                 type="password"
                 formControlName="password" 
-                placeholder="Mínimo 8 caracteres com 1 número">
+                placeholder="Mínimo 8 caracteres com 1 número"
+                class="smooth-input-field">
               </ion-input>
-            </ion-item>
-            <div class="error-container" *ngIf="password?.invalid && password?.touched || (password?.invalid && password?.touched)">
+            </div>
+            <div class="error-container" *ngIf="password?.invalid && password?.touched">
               <ion-text color="danger">
                 <small>A senha deve ter no mínimo 8 caracteres e conter pelo menos 1 número.</small>
               </ion-text>
