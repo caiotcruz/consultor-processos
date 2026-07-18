@@ -1,7 +1,12 @@
-<ion-header class="ion-no-border smooth-header">
-  <ion-toolbar>
-    <ion-title>Meu Perfil</ion-title>
-  </ion-toolbar>
+<ion-header class="ion-no-border custom-app-header">
+  <div class="header-content">
+    <div class="header-left-group">
+      <button routerLink="/processes" class="header-back-btn">
+        <ion-icon name="arrow-back-outline"></ion-icon>
+      </button>
+      <h1 class="header-title">Meu Perfil</h1>
+    </div>
+  </div>
 </ion-header>
 
 <ion-content class="profile-page">
@@ -24,22 +29,22 @@
       <span class="section-title">Informações Pessoais</span>
       <div class="profile-card">
         <form [formGroup]="nameForm" (ngSubmit)="saveName()" class="inline-form">
-          <ion-item lines="none" class="smooth-item input-item">
-            <ion-icon name="person-outline" slot="start" class="item-icon"></ion-icon>
+          <div class="smooth-input-wrapper">
+            <ion-icon name="person-outline" class="input-icon"></ion-icon>
             <ion-input 
               label="Nome" 
               labelPlacement="floating" 
               formControlName="name" 
-              type="text">
+              type="text"
+              class="smooth-input-field">
             </ion-input>
             <button 
-              slot="end" 
               type="submit" 
               [disabled]="nameForm.invalid || isSavingName"
               class="inline-save-btn">
               Salvar
             </button>
-          </ion-item>
+          </div>
         </form>
       </div>
     </div>
@@ -77,57 +82,61 @@
     <div class="section-wrapper">
       <span class="section-title">Notificações</span>
       <div class="profile-card list-card">
-        <ion-item lines="none" class="smooth-item toggle-item">
-          <ion-icon name="mail-outline" slot="start" class="item-icon"></ion-icon>
-          <ion-label>
+        <div class="custom-list-item">
+          <ion-icon name="mail-outline" class="item-icon"></ion-icon>
+          <div class="item-label-group">
             <h3>Notificações por E-mail</h3>
             <p>Receber atualizações na caixa de entrada</p>
-          </ion-label>
+          </div>
           <ion-toggle
             [checked]="profile()!.notifications.emailEnabled"
-            (ionChange)="updateNotifPref('emailEnabled', $event.detail.checked)">
+            (ionChange)="updateNotifPref('emailEnabled', $event.detail.checked)"
+            class="custom-toggle">
           </ion-toggle>
-        </ion-item>
+        </div>
 
         <div class="list-divider"></div>
 
-        <ion-item lines="none" class="smooth-item toggle-item">
-          <ion-icon name="notifications-outline" slot="start" class="item-icon"></ion-icon>
-          <ion-label>
+        <div class="custom-list-item">
+          <ion-icon name="notifications-outline" class="item-icon"></ion-icon>
+          <div class="item-label-group">
             <h3>Notificações Push</h3>
             <p>Alertas em tempo real no dispositivo</p>
-          </ion-label>
+          </div>
           <ion-toggle
             [checked]="profile()!.notifications.pushEnabled"
-            (ionChange)="updateNotifPref('pushEnabled', $event.detail.checked)">
+            (ionChange)="updateNotifPref('pushEnabled', $event.detail.checked)"
+            class="custom-toggle">
           </ion-toggle>
-        </ion-item>
+        </div>
       </div>
     </div>
 
     <div class="section-wrapper">
       <span class="section-title">Conta</span>
       <div class="profile-card list-card">
-        <ion-item button lines="none" routerLink="/profile/change-password" class="smooth-item action-item">
-          <ion-icon name="key-outline" slot="start" class="item-icon"></ion-icon>
-          <ion-label>Alterar Senha</ion-label>
-          <ion-icon name="chevron-forward-outline" slot="end" class="arrow-icon"></ion-icon>
-        </ion-item>
+        
+        <button routerLink="/profile/change-password" class="custom-action-row">
+          <ion-icon name="key-outline" class="item-icon"></ion-icon>
+          <span class="row-text">Alterar Senha</span>
+          <ion-icon name="chevron-forward-outline" class="arrow-icon"></ion-icon>
+        </button>
 
         <div class="list-divider"></div>
 
-        <ion-item button lines="none" routerLink="/profile/notifications" class="smooth-item action-item">
-          <ion-icon name="notifications-outline" slot="start" class="item-icon"></ion-icon>
-          <ion-label>Histórico de Notificações</ion-label>
-          <ion-icon name="chevron-forward-outline" slot="end" class="arrow-icon"></ion-icon>
-        </ion-item>
+        <button routerLink="/profile/notifications" class="custom-action-row">
+          <ion-icon name="notifications-outline" class="item-icon"></ion-icon>
+          <span class="row-text">Histórico de Notificações</span>
+          <ion-icon name="chevron-forward-outline" class="arrow-icon"></ion-icon>
+        </button>
 
         <div class="list-divider"></div>
 
-        <ion-item button lines="none" (click)="logout()" class="smooth-item action-item logout-item">
-          <ion-icon name="log-out-outline" slot="start" class="item-icon"></ion-icon>
-          <ion-label>Sair do Aplicativo</ion-label>
-        </ion-item>
+        <button (click)="logout()" class="custom-action-row logout-row">
+          <ion-icon name="log-out-outline" class="item-icon"></ion-icon>
+          <span class="row-text">Sair do Aplicativo</span>
+        </button>
+        
       </div>
     </div>
 

@@ -1,37 +1,71 @@
 $primary: #1e293b;
+$primary-hover: #0f172a;
 $bg-page: #f8fafc;
 $bg-card: #ffffff;
 $bg-input: #f1f5f9;
-$bg-input-focus: #f1f5f9;
+$bg-input-focus: #e2e8f0;
 $text-muted: #64748b;
 $border-color: rgba(226, 232, 240, 0.8);
 $radius-lg: 20px;
 $radius-md: 14px;
-$transition-smooth: all 0.2s ease-in-out;
-$shadow-soft: 0 4px 6px -1px rgba(15, 23, 42, 0.02), 0 2px 4px -2px rgba(15, 23, 42, 0.01);
+$transition-smooth: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+$shadow-soft: 0 4px 6px -1px rgba(15, 23, 42, 0.01), 0 2px 4px -2px rgba(15, 23, 42, 0.01);
 
-.smooth-header {
-  ion-toolbar {
-    --background: #{$bg-page};
-    --color: #{$primary};
-    --border-width: 0;
-    padding: 12px 16px 0;
+.custom-app-header {
+  background: $bg-page !important;
+  padding: 20px 24px 8px;
+
+  .header-content {
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
   }
-  
-  ion-title {
-    font-size: 20px;
-    font-weight: 700;
-    letter-spacing: -0.5px;
+
+  .header-left-group {
+    display: flex;
+    align-items: center;
+    gap: 12px; 
+  }
+
+  .header-title {
+    font-size: 24px;
+    font-weight: 800;
+    color: $primary;
+    margin: 0;
+    letter-spacing: -0.6px;
+  }
+
+  .header-back-btn {
+    background: transparent;
+    border: none;
+    color: $primary;
+    font-size: 24px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px;
+    margin-left: -6px; 
+    border-radius: 50%;
+    transition: $transition-smooth;
+
+    &:hover {
+      background: rgba(30, 41, 59, 0.05);
+      transform: translateX(-2px); 
+    }
+
+    &:active {
+      transform: translateX(0) scale(0.95);
+    }
   }
 }
-
 .profile-page {
   --background: #{$bg-page};
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
 .profile-container {
-  padding: 16px 24px 40px;
+  padding: 0 24px 40px;
   max-width: 600px;
   margin: 0 auto;
   display: flex;
@@ -123,54 +157,69 @@ $shadow-soft: 0 4px 6px -1px rgba(15, 23, 42, 0.02), 0 2px 4px -2px rgba(15, 23,
     text-transform: uppercase;
     letter-spacing: 0.8px;
     color: $text-muted;
-    padding-left: 8px;
+    padding-left: 4px;
   }
 }
 
-.smooth-item {
-  --background: transparent;
-  --min-height: 52px;
-  --padding-start: 4px;
-  --padding-end: 4px;
-  --inner-padding-end: 0;
-  color: $primary;
+.smooth-input-wrapper {
+  display: flex;
+  align-items: center;
+  background: $bg-input;
+  border-radius: $radius-md;
+  padding: 4px 16px;
+  min-height: 64px;
+  border: 1px solid transparent;
+  transition: $transition-smooth;
 
-  .item-icon {
-    font-size: 20px;
+  &:focus-within {
+    background: $bg-input-focus;
+    border-color: rgba(30, 41, 59, 0.15);
+  }
+
+  .input-icon {
     color: $text-muted;
+    font-size: 20px;
     margin-right: 12px;
-  }
-}
-
-.inline-form {
-  .input-item {
-    --min-height: 60px;
+    flex-shrink: 0;
   }
 
-  ion-input {
+  .smooth-input-field {
+    --background: transparent !important;
+    --border-color: transparent !important;
+    --box-shadow: none !important;
+    --padding-top: 22px;
+    --padding-bottom: 4px;
     font-size: 15px;
-    font-weight: 500;
+    font-weight: 600;
     color: $primary;
+    width: 100%;
+
+    input {
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+    }
   }
 
   .inline-save-btn {
-    background: $bg-input;
+    background: #ffffff;
     color: $primary;
-    border: none;
+    border: 1px solid rgba(226, 232, 240, 0.8);
     border-radius: 8px;
-    padding: 8px 16px;
-    font-size: 13px;
-    font-weight: 600;
+    padding: 6px 14px;
+    font-size: 12.5px;
+    font-weight: 700;
     cursor: pointer;
     transition: $transition-smooth;
+    box-shadow: 0 2px 4px rgba(15, 23, 42, 0.02);
 
     &:hover:not(:disabled) {
-      background: $bg-input-focus;
+      background: $primary;
+      color: #ffffff;
     }
 
     &:disabled {
       opacity: 0.5;
-      cursor: not-allowed;
     }
   }
 }
@@ -181,71 +230,41 @@ $shadow-soft: 0 4px 6px -1px rgba(15, 23, 42, 0.02), 0 2px 4px -2px rgba(15, 23,
   gap: 16px;
   padding: 16px 20px;
 
-  .grid-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .grid-icon-wrapper {
-    background: $bg-input;
-    color: $primary;
-    padding: 10px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-  }
-
-  .grid-text {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
-
-  .grid-label {
-    font-size: 12px;
-    color: $text-muted;
-    font-weight: 500;
-  }
-
-  .grid-value {
-    font-size: 15px;
-    font-weight: 700;
-    color: $primary;
-
-    .limit-divider {
-      color: #94a3b8;
-      font-weight: 400;
-    }
-  }
+  .grid-item { display: flex; align-items: center; gap: 12px; }
+  .grid-icon-wrapper { background: $bg-input; color: $primary; padding: 10px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+  .grid-text { display: flex; flex-direction: column; gap: 2px; }
+  .grid-label { font-size: 12px; color: $text-muted; font-weight: 500; }
+  .grid-value { font-size: 15px; font-weight: 700; color: $primary; .limit-divider { color: #94a3b8; font-weight: 400; } }
 }
 
 .list-card {
-  padding: 4px 12px;
+  padding: 6px 0;
 
   .list-divider {
     height: 1px;
     background: #f1f5f9;
-    margin-left: 36px;
+    margin: 0 16px 0 48px;
   }
 
-  .toggle-item {
-    h3 {
-      font-size: 14.5px;
-      font-weight: 600;
-      color: $primary;
-      margin: 0;
-    }
+  .custom-list-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    gap: 14px;
 
-    p {
-      font-size: 12px;
+    .item-icon {
+      font-size: 20px;
       color: $text-muted;
-      margin: 2px 0 0;
+      flex-shrink: 0;
     }
 
-    ion-toggle {
+    .item-label-group {
+      flex: 1;
+      h3 { font-size: 14.5px; font-weight: 600; color: $primary; margin: 0; }
+      p { font-size: 12px; color: $text-muted; margin: 2px 0 0; }
+    }
+
+    .custom-toggle {
       --handle-width: 18px;
       --handle-height: 18px;
       --track-background: #cbd5e1;
@@ -253,13 +272,33 @@ $shadow-soft: 0 4px 6px -1px rgba(15, 23, 42, 0.02), 0 2px 4px -2px rgba(15, 23,
     }
   }
 
-  .action-item {
-    --ripple-color: rgba(30, 41, 59, 0.05);
+  .custom-action-row {
+    width: 100%;
+    background: transparent;
+    border: none;
+    display: flex;
+    align-items: center;
+    padding: 14px 16px;
+    gap: 14px;
+    text-align: left;
     cursor: pointer;
+    transition: $transition-smooth;
 
-    ion-label {
+    &:hover {
+      background: #f8fafc;
+    }
+
+    .item-icon {
+      font-size: 20px;
+      color: $text-muted;
+      transition: $transition-smooth;
+    }
+
+    .row-text {
+      flex: 1;
       font-size: 14.5px;
-      font-weight: 500;
+      font-weight: 600;
+      color: $primary;
     }
 
     .arrow-icon {
@@ -267,11 +306,12 @@ $shadow-soft: 0 4px 6px -1px rgba(15, 23, 42, 0.02), 0 2px 4px -2px rgba(15, 23,
       color: #cbd5e1;
     }
 
-    &.logout-item {
-      color: #ef4444;
-
-      .item-icon {
+    &.logout-row {
+      .row-text, .item-icon {
         color: #ef4444;
+      }
+      &:hover {
+        background: #fef2f2;
       }
     }
   }
@@ -286,19 +326,8 @@ $shadow-soft: 0 4px 6px -1px rgba(15, 23, 42, 0.02), 0 2px 4px -2px rgba(15, 23,
   padding: 20px;
 
   .danger-info {
-    h3 {
-      font-size: 15px;
-      font-weight: 700;
-      color: #991b1b;
-      margin: 0;
-    }
-
-    p {
-      font-size: 13px;
-      color: #b91c1c;
-      margin: 4px 0 0;
-      line-height: 1.5;
-    }
+    h3 { font-size: 15px; font-weight: 700; color: #991b1b; margin: 0; }
+    p { font-size: 13px; color: #b91c1c; margin: 4px 0 0; line-height: 1.5; }
   }
 
   .danger-button {
@@ -317,22 +346,10 @@ $shadow-soft: 0 4px 6px -1px rgba(15, 23, 42, 0.02), 0 2px 4px -2px rgba(15, 23,
     transition: $transition-smooth;
     box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);
 
-    &:hover {
-      background: #dc2626;
-      box-shadow: 0 6px 16px rgba(239, 68, 68, 0.25);
-    }
-
-    &:active {
-      transform: translateY(1px);
-    }
+    &:hover { background: #dc2626; }
+    &:active { transform: translateY(1px); }
   }
 }
 
-.animate-fade {
-  animation: smoothFade 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-@keyframes smoothFade {
-  from { opacity: 0; transform: scale(0.99) translateY(4px); }
-  to { opacity: 1; transform: scale(1) translateY(0); }
-}
+.animate-fade { animation: smoothFade 0.35s cubic-bezier(0.4, 0, 0.2, 1); }
+@keyframes smoothFade { from { opacity: 0; transform: scale(0.99) translateY(4px); } to { opacity: 1; transform: scale(1) translateY(0); } }

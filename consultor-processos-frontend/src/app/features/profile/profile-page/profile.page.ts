@@ -1,18 +1,17 @@
-// src/app/features/profile/profile.page.ts
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { RouterLink, Router } from '@angular/router';
 import {
   IonContent, IonHeader, IonToolbar, IonTitle,
-  IonList, IonItem, IonLabel, IonInput, IonToggle,
-  IonButton, IonIcon, IonNote, AlertController
+  IonItem, IonLabel, IonInput, IonToggle,
+  IonIcon, AlertController
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
   personOutline, mailOutline, notificationsOutline,
   keyOutline, trashOutline, logOutOutline, chevronForwardOutline,
-  shieldCheckmarkOutline, speedometerOutline
+  shieldCheckmarkOutline, speedometerOutline, arrowBackOutline
 } from 'ionicons/icons';
 import { UserService } from '../../../services/user.service';
 import { AuthService } from '../../../core/services/auth.service';
@@ -25,8 +24,8 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
   standalone: true,
   imports: [
     CommonModule, ReactiveFormsModule, RouterLink,
-    IonContent, IonHeader, IonToolbar, IonTitle,
-    IonItem, IonLabel, IonInput, IonToggle,
+    IonContent, IonHeader,
+    IonInput, IonToggle,
     IonIcon,
     LoadingSpinnerComponent
   ],
@@ -65,7 +64,8 @@ export class ProfilePage implements OnInit {
       logOutOutline,
       chevronForwardOutline,
       shieldCheckmarkOutline,
-      speedometerOutline
+      speedometerOutline,
+      arrowBackOutline
     });
   }
 
@@ -87,7 +87,7 @@ export class ProfilePage implements OnInit {
       next: resp => {
         this.profile.set(resp.data ?? null);
         this.isSavingName = false;
-        this.toast.success('Nome atualizado com sucesso.');
+        this.toast.success('Nome updated com sucesso.');
       },
       error: () => {
         this.isSavingName = false;
